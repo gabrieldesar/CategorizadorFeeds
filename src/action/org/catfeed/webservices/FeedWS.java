@@ -33,6 +33,7 @@ public class FeedWS
 		 User usuarioLogado = facebookClient.fetchObject("me", User.class);
 		 
 		 persistirPosts(newsFeed, usuarioLogado);
+		 System.out.println("Mudança Gabriel");
     }
 	
 	private void persistirPosts(Connection<Post> newsFeed, User usuarioLogado)
