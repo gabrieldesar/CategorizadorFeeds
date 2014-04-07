@@ -29,7 +29,7 @@ public class FeedWS
 		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
 		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
-		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class);
+		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
 		 User usuarioLogado = facebookClient.fetchObject("me", User.class);
 		 
 		 persistirPosts(newsFeed, usuarioLogado);
