@@ -11,7 +11,6 @@ window.fbAsyncInit = function() {
   FB.Event.subscribe('auth.authResponseChange', function(response) {
     if (response.status === 'connected') {
       reportarStatusAPI();
-      salvarFeed();
     } else if (response.status === 'not_authorized') {
 
     	FB.login(function(response) {
@@ -42,7 +41,7 @@ window.fbAsyncInit = function() {
 
   function reportarStatusAPI() {
     FB.api('/me', function(response) {
-      console.log('API conectada com sucesso, recuperando o feed do usuário: ' + response.name + '.');
+      console.log('API do Facebook conectada com sucesso.');
     });
   }
   

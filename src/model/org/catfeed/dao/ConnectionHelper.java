@@ -8,17 +8,22 @@ import java.util.ResourceBundle;
 public class ConnectionHelper
 {
 	private String url;
+	
 	private static ConnectionHelper instance;
 
 	private ConnectionHelper()
 	{
     	String driver = null;
-		try {
+    	
+		try
+		{
             ResourceBundle bundle = ResourceBundle.getBundle("catfeed");
             driver = bundle.getString("jdbc.driver");
             Class.forName(driver);
             url=bundle.getString("jdbc.url");
-		} catch (Exception e) {
+		} 
+		catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
