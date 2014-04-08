@@ -55,6 +55,44 @@ public class FeedWSUnitTest
 	}
 	
 	@Test
+	public void testExtrairPalavrasChave_DeveTratarPostIngles()
+	{
+		FeedWS feedWS = new FeedWS();
+		
+		String mensagemPost = "Featured Fan Art - Morgana by Maysiria";
+		
+		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		
+		assertEquals(5, palavrasChave.size());
+		assertEquals(palavrasChave.get(0), "featured");
+		assertEquals(palavrasChave.get(1), "fan");
+		assertEquals(palavrasChave.get(2), "art");
+		assertEquals(palavrasChave.get(3), "morgana");
+		assertEquals(palavrasChave.get(4), "maysiria");
+	}
+	
+	@Test
+	public void testExtrairPalavrasChave_DeveTratarPostIngles2()
+	{
+		FeedWS feedWS = new FeedWS();
+		
+		String mensagemPost = "To view previous winners please visit the \"Winners\" tab on the Daily";
+		
+		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		
+		assertEquals(8, palavrasChave.size());
+		assertEquals(palavrasChave.get(0), "view");
+		assertEquals(palavrasChave.get(1), "previous");
+		assertEquals(palavrasChave.get(2), "winners");
+		assertEquals(palavrasChave.get(3), "please");
+		assertEquals(palavrasChave.get(4), "visit");
+		assertEquals(palavrasChave.get(5), "winners");
+		assertEquals(palavrasChave.get(6), "tab");
+		assertEquals(palavrasChave.get(7), "daily");
+	}
+	
+
+	@Test
 	public void testExtrairPalavrasChave_DeveTratarHashTags()
 	{
 		FeedWS feedWS = new FeedWS();
