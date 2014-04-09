@@ -3,9 +3,10 @@ package org.catfeed.webservices;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
+import org.catfeed.KeyWord;
 import org.junit.Test;
 
 public class FeedWSUnitTest
@@ -32,10 +33,10 @@ public class FeedWSUnitTest
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
 		assertEquals(4, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "motivos");
-		assertEquals(palavrasChave.get(1), "ainda");
-		assertEquals(palavrasChave.get(2), "acreditar");
-		assertEquals(palavrasChave.get(3), "humanidade");
+		assertEquals("motivos",palavrasChave.get(0));
+		assertEquals( "ainda", palavrasChave.get(1));
+		assertEquals("acreditar", palavrasChave.get(2));
+		assertEquals("humanidade", palavrasChave.get(3));
 	}
 	
 	@Test
@@ -48,10 +49,10 @@ public class FeedWSUnitTest
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
 		assertEquals(4, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "diamante");
-		assertEquals(palavrasChave.get(1), "negro");
-		assertEquals(palavrasChave.get(2), "veio");
-		assertEquals(palavrasChave.get(3), "joalheria");
+		assertEquals("diamante", palavrasChave.get(0));
+		assertEquals("negro", palavrasChave.get(1));
+		assertEquals("veio", palavrasChave.get(2) );
+		assertEquals("joalheria", palavrasChave.get(3));
 	}
 	
 	@Test
@@ -64,11 +65,11 @@ public class FeedWSUnitTest
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
 		assertEquals(5, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "amiga");
-		assertEquals(palavrasChave.get(1), "parceira");
-		assertEquals(palavrasChave.get(2), "segundachata");
-		assertEquals(palavrasChave.get(3), "cansadas");
-		assertEquals(palavrasChave.get(4), "quecheguelogosexta");
+		assertEquals("amiga", palavrasChave.get(0));
+		assertEquals("parceira", palavrasChave.get(1));
+		assertEquals("segundachata", palavrasChave.get(2));
+		assertEquals("cansadas", palavrasChave.get(3));
+		assertEquals("quecheguelogosexta", palavrasChave.get(4));
 	}
 	
 	@Test
@@ -81,7 +82,7 @@ public class FeedWSUnitTest
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
 		assertEquals(1, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "fresquin");
+		assertEquals("fresquin", palavrasChave.get(0));
 
 	}
 	
@@ -95,8 +96,33 @@ public class FeedWSUnitTest
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
 		assertEquals(12, palavrasChave.size());
-		assertEquals(palavrasChave.get(1), "comprar");
+		assertEquals("comprar", palavrasChave.get(1));
 		assertFalse(palavrasChave.contains("*-*"));
 		assertFalse(palavrasChave.contains("#"));
+	}
+	
+	@Test
+	public void testPrepararListaPalavrasChave_DeveConterFrequenciaCorreta()
+	{
+		FeedWS feedWS = new FeedWS();
+		
+		List<String> palavrasChave = new ArrayList<String>();
+		palavrasChave.add("amiga");
+		palavrasChave.add("amiga");
+		palavrasChave.add("amiga");
+		palavrasChave.add("colega");
+		palavrasChave.add("colega");
+		palavrasChave.add("parceira");
+		palavrasChave.add("conhecido");
+		
+		List<KeyWord> listaKeyWords = feedWS.prepararListaKeyWords(palavrasChave);
+		
+		assertEquals(4, listaKeyWords.size());
+		
+		assertEquals("amiga", listaKeyWords.get(0).getText());
+		assertEquals(new Integer(3), listaKeyWords.get(0).getWeight());
+		
+		assertEquals("colega", listaKeyWords.get(1).getText());
+		assertEquals(new Integer(2), listaKeyWords.get(1).getWeight());
 	}
 }

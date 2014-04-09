@@ -1,0 +1,28 @@
+.header {
+	padding-top: 5px;
+}
+
+.leftArea {
+	position: absolute;
+	left: 10px;
+	top: 100px;
+	bottom: 20px;
+	width: 600px;
+	border: solid 1px #CCCCCC;
+	overflow-y: scroll;
+}
+
+.mainArea {
+	position: absolute;
+	top: 100px;
+	bottom: 20px;
+	left: 700px;
+	width: 600px;
+	border: solid 1px #CCCCCC;
+}
+
+#wordCloud {
+	width: 550px; 
+	height: 350px; 
+	position: relative;
+}

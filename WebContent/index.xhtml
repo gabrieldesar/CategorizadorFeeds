@@ -16,9 +16,24 @@
 		
 		<!--  Carrega os recursos de CSS  -->
 		<link href="/CatFeed/css/jqcloud.css" type="text/css" rel="stylesheet" media="all" />
+		<link href="/CatFeed/css/catfeed.css" type="text/css" rel="stylesheet" media="all" />
 		
-		<div id="fb-root" >
-			<fb:login-button show-faces='true' scope='read_stream'></fb:login-button>
+		<div class="header">
+			<div id="fb-root" >
+				<fb:login-button show-faces='true' scope='read_stream'></fb:login-button>
+			</div>
+		
+			<button id="btnExibirFeed">Exibir Feed</button>
+			<button id="btnCloudFeed">Gerar Cloud</button>
+			<button id="btnPersistirFeed">Persistir Feed</button>
+		</div>
+		
+		<div class="leftArea">
+			<ul id="listaPosts"></ul>
+		</div>
+		
+		<div class="mainArea">
+			<div id="wordCloud" />
 		</div>
 		
 	</h:body>

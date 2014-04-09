@@ -3,13 +3,18 @@ package org.catfeed.webservices;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.catfeed.KeyWord;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
@@ -20,6 +25,7 @@ import org.catfeed.StopWord;
 import org.catfeed.dao.PostDAO;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.restfb.Connection;
@@ -36,6 +42,31 @@ public class FeedWS
 
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+    public String exibirFeed(@JsonProperty("accessToken") String accessToken)
+	{
+		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+		 
+		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
+		 
+		 List<String> listaMensagemPosts = new ArrayList<String>();
+		 
+		 for(Post post : newsFeed.getData())
+		 {
+			 if(post.getMessage() != null)
+			 {
+				 listaMensagemPosts.add(post.getMessage());
+			 }
+		 }
+		 
+		 return new Gson().toJson(listaMensagemPosts);
+    }
+	
+	@POST
+	@Path("salvarFeed")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
     public void salvarFeed(@JsonProperty("accessToken") String accessToken)
 	{
 		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
@@ -46,6 +77,32 @@ public class FeedWS
 		 
 		 persistirPosts(newsFeed, usuarioLogado);
     }
+	
+	@POST
+	@Path("mapaFrequencias")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+	public String prepararCloudFeed(@JsonProperty("accessToken") String accessToken)
+	{
+		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+
+		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
+		 List<String> palavrasChaveFeed = new ArrayList<String>();
+
+		 for(Post post : newsFeed.getData())
+		 {
+			 if(post.getMessage() != null)
+			 {
+				 List<String> palavrasChavePost = extrairPalavrasChave(post.getMessage());
+				 palavrasChaveFeed.addAll(palavrasChavePost);
+			 }
+		 }
+		 
+		 List<KeyWord> listaPalavrasChave = prepararListaKeyWords(palavrasChaveFeed);
+		 
+		 return new Gson().toJson(listaPalavrasChave);
+	}
 	
 	private void persistirPosts(Connection<Post> newsFeed, User usuarioLogado)
 	{
@@ -66,6 +123,30 @@ public class FeedWS
 		 String string = je.getAsJsonObject().get(parametro).getAsString();
 		 
 		 return string;
+	}
+	
+	protected List<KeyWord> prepararListaKeyWords(List<String> palavrasChaveFeed)
+	{
+		Map<String, Integer> mapaFrequenciaPalavrasChave = new HashMap<String, Integer>();
+		
+		for(String palavraChave : palavrasChaveFeed)
+		{
+			Integer frequencia = mapaFrequenciaPalavrasChave.get(palavraChave);
+			mapaFrequenciaPalavrasChave.put(palavraChave, (frequencia == null) ? 1 : frequencia + 1);
+		}
+		
+		List<KeyWord> listaPalavrasChave = new ArrayList<KeyWord>();
+		
+		for (Map.Entry<String, Integer> entry : mapaFrequenciaPalavrasChave.entrySet())
+		{
+			KeyWord palavraChave = new KeyWord(entry.getKey(), entry.getValue());
+
+			listaPalavrasChave.add(palavraChave);
+		}
+		
+		Collections.sort(listaPalavrasChave);
+		
+		return listaPalavrasChave;
 	}
 
 	protected List<String> extrairPalavrasChave(String mensagem)
@@ -96,6 +177,7 @@ public class FeedWS
 			    final String token = charTermAttribute.toString().toString();
 			    palavrasChave.add(token);
 			}
+			stopFilter.close();
 		} 
 	    catch (IOException e)
 	    {

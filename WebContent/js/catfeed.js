@@ -39,13 +39,13 @@ window.fbAsyncInit = function() {
    ref.parentNode.insertBefore(js, ref);
   }(document));
 
-  function reportarStatusAPI() {
+function reportarStatusAPI() {
     FB.api('/me', function(response) {
       console.log('API do Facebook conectada com sucesso.');
     });
   }
   
-  function salvarFeed() {
+function exibirFeed() {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
       var accessTokenString = JSON.stringify({"accessToken": accessToken});
       
@@ -55,10 +55,87 @@ window.fbAsyncInit = function() {
           data: accessTokenString,
           contentType: "application/json",
           error: function (xhr, status) {
-                  console.log("Ocorreu um erro ao salvar o feed: " + status + '.');
+                  console.log("Ocorreu um erro ao exibir o feed: " + status + '.');
               },
-          success: function (msg) {
-              console.log("Feed salvo com sucesso.");
+          success: function (data, msg) {
+              console.log("Feed exibido com sucesso.");
+              renderizarPostsFeed(data);
           }
       });
-  }
+}
+
+function persistirFeed() {
+	  var accessToken = FB.getAuthResponse()['accessToken'];
+	  var accessTokenString = JSON.stringify({"accessToken": accessToken});
+    
+    jQuery.ajax({
+        type: "POST",
+        url: rootURL + '/salvarFeed',
+        data: accessTokenString,
+        contentType: "application/json",
+        error: function (xhr, status) {
+                console.log("Ocorreu um erro ao persistir o feed: " + status + '.');
+            },
+        success: function (msg) {
+            console.log("Feed salvo com sucesso.");
+        }
+    });
+}
+
+function recuperarMapaFrequenciasPalavraChave() {
+	  var accessToken = FB.getAuthResponse()['accessToken'];
+      var accessTokenString = JSON.stringify({"accessToken": accessToken});
+	  
+      jQuery.ajax({
+          type: "POST",
+          url: rootURL + '/mapaFrequencias',
+          data: accessTokenString,
+          contentType: "application/json",
+          dataType: "json",
+          error: function (xhr, status) {
+                  console.log("Ocorreu um erro ao recuperar o mapa de frequências das palavras chave: " + status + '.');
+              },
+          success: function (data, msg) {
+              console.log("Mapa de frequências recuperado com sucesso.");
+              renderizarCloudFeed(data);
+          }
+      });
+}
+  
+function renderizarPostsFeed(data) {
+	
+	var list = data == null ? [] : (data instanceof Array ? data : [data]);
+
+	jQuery('#listaPosts li').remove();
+	$.each(list, function(index, mensagemPost) {
+		$('#listaPosts').append('<li>'+mensagemPost+'</li>');
+	});
+}
+
+function renderizarCloudFeed(data) {
+	
+	var listaPalavrasChave = data == null ? [] : (data instanceof Array ? data : [data]);
+	
+	jQuery("#wordCloud").jQCloud(listaPalavrasChave);
+}
+  
+jQuery(document).ready(function() {
+	
+	jQuery('#btnExibirFeed').click(function() {
+		console.log('Exibindo o feed...');
+		exibirFeed();
+		return false;
+	});
+	
+	jQuery('#btnCloudFeed').click(function() {
+		console.log('Gerando cloud do feed...');
+		recuperarMapaFrequenciasPalavraChave();
+		return false;
+	});
+	
+	jQuery('#btnPersistirFeed').click(function() {
+		console.log('Persistindo o feed no banco...');
+		persistirFeed();
+		return false;
+	});
+});
