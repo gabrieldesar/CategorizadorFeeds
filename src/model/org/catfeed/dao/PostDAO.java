@@ -68,6 +68,62 @@ public class PostDAO
         return listaPosts;
 	}
 	
+	public List<org.catfeed.Post> recuperarPostsSemCategoria()
+	{
+		List<org.catfeed.Post> listaPosts = new ArrayList<org.catfeed.Post>();
+        Connection c = null;
+    	String sql = "SELECT * FROM Post WHERE IdCategoria = 1";
+        try
+        {
+            c = ConnectionHelper.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next())
+            {
+                listaPosts.add(processarResultado(rs));
+            }
+        } 
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+		} 
+        finally
+        {
+			ConnectionHelper.close(c);
+		}
+        
+        return listaPosts;
+	}
+	
+	public List<org.catfeed.Post> recuperarPostsComCategoria()
+	{
+		List<org.catfeed.Post> listaPosts = new ArrayList<org.catfeed.Post>();
+        Connection c = null;
+    	String sql = "SELECT * FROM Post p" +
+			         "WHERE p.IdCategoria != 1 " +	
+			         "ORDER BY p.Mensagem";
+        try
+        {
+            c = ConnectionHelper.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next())
+            {
+                listaPosts.add(processarResultado(rs));
+            }
+        } 
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+		} 
+        finally
+        {
+			ConnectionHelper.close(c);
+		}
+        
+        return listaPosts;
+	}
+	
     private org.catfeed.Post processarResultado(ResultSet rs) throws SQLException
     {
         org.catfeed.Post post = new org.catfeed.Post();

@@ -3,6 +3,7 @@ package org.catfeed.webservices;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,11 +33,10 @@ public class FeedWSUnitTest
 		
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
-		assertEquals(4, palavrasChave.size());
+		assertEquals(3, palavrasChave.size());
 		assertEquals("motivos",palavrasChave.get(0));
-		assertEquals( "ainda", palavrasChave.get(1));
-		assertEquals("acreditar", palavrasChave.get(2));
-		assertEquals("humanidade", palavrasChave.get(3));
+		assertEquals("acreditar", palavrasChave.get(1));
+		assertEquals("humanidade", palavrasChave.get(2));
 	}
 	
 	@Test
@@ -133,7 +133,7 @@ public class FeedWSUnitTest
 		
 		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
 		
-		assertEquals(12, palavrasChave.size());
+		assertEquals(11, palavrasChave.size());
 		assertEquals("comprar", palavrasChave.get(1));
 		assertFalse(palavrasChave.contains("*-*"));
 		assertFalse(palavrasChave.contains("#"));
@@ -162,5 +162,16 @@ public class FeedWSUnitTest
 		
 		assertEquals("colega", listaKeyWords.get(1).getText());
 		assertEquals(new Integer(2), listaKeyWords.get(1).getWeight());
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_DeveExibirCategoriaCorreta() throws ClassNotFoundException, IOException
+	{
+		FeedWS feedWS = new FeedWS();
+		String mensagem = "Bendito o que vem em nome do Senhor. Hosana nas alturas!";
+
+		String categoria = feedWS.obterCategoriaMensagem(mensagem);
+		
+		assertEquals("Religião", categoria);
 	}
 }
