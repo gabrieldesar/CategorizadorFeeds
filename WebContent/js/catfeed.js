@@ -11,6 +11,8 @@ window.fbAsyncInit = function() {
   FB.Event.subscribe('auth.authResponseChange', function(response) {
     if (response.status === 'connected') {
       reportarStatusAPI();
+      console.log('Persistindo o feed no banco...');
+      persistirFeed();
     } else if (response.status === 'not_authorized') {
 
     	FB.login(function(response) {
@@ -130,12 +132,6 @@ jQuery(document).ready(function() {
 	jQuery('#btnCloudFeed').click(function() {
 		console.log('Gerando cloud do feed...');
 		recuperarMapaFrequenciasPalavraChave();
-		return false;
-	});
-	
-	jQuery('#btnPersistirFeed').click(function() {
-		console.log('Persistindo o feed no banco...');
-		persistirFeed();
 		return false;
 	});
 });

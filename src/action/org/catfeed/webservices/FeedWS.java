@@ -38,29 +38,19 @@ import com.restfb.types.User;
 @Path("feed")
 public class FeedWS
 {
-	PostDAO postDAO = new PostDAO();
+	private static final int ID_SEM_CATEGORIA = 1;
+	
+	private PostDAO postDAO = new PostDAO();
 
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON})
 	@Produces({ MediaType.APPLICATION_JSON})
     public String exibirFeed(@JsonProperty("accessToken") String accessToken)
 	{
-		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
-		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+		 String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
+		 List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
 		 
-		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
-		 
-		 List<String> listaMensagemPosts = new ArrayList<String>();
-		 
-		 for(Post post : newsFeed.getData())
-		 {
-			 if(post.getMessage() != null)
-			 {
-				 listaMensagemPosts.add(post.getMessage());
-			 }
-		 }
-		 
-		 return new Gson().toJson(listaMensagemPosts);
+		 return new Gson().toJson(listaMensagensPosts);
     }
 	
 	@POST
@@ -75,7 +65,7 @@ public class FeedWS
 		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
 		 User usuarioLogado = facebookClient.fetchObject("me", User.class);
 		 
-		 persistirPosts(newsFeed, usuarioLogado);
+		 persistirPostsSemCategoria(newsFeed, usuarioLogado);
     }
 	
 	@POST
@@ -84,27 +74,53 @@ public class FeedWS
 	@Produces({ MediaType.APPLICATION_JSON})
 	public String prepararCloudFeed(@JsonProperty("accessToken") String accessToken)
 	{
-		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
-		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
-
-		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
-		 List<String> palavrasChaveFeed = new ArrayList<String>();
-
-		 for(Post post : newsFeed.getData())
-		 {
-			 if(post.getMessage() != null)
-			 {
-				 List<String> palavrasChavePost = extrairPalavrasChave(post.getMessage());
-				 palavrasChaveFeed.addAll(palavrasChavePost);
-			 }
-		 }
+		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
+		
+		List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
+		List<String> listaMensagensSemStopWords = obterListaMensagensSemStopWords(listaMensagensPosts);
+		List<KeyWord> listaKeyWords = prepararListaKeyWords(listaMensagensSemStopWords);
 		 
-		 List<KeyWord> listaPalavrasChave = prepararListaKeyWords(palavrasChaveFeed);
-		 
-		 return new Gson().toJson(listaPalavrasChave);
+		return new Gson().toJson(listaKeyWords);
 	}
 	
-	private void persistirPosts(Connection<Post> newsFeed, User usuarioLogado)
+	private List<String> obterListaMensagensSemStopWords(List<String> listaMensagensPosts)
+	{
+		 List<String> listaMensagensSemStopWords = new ArrayList<String>();
+
+		 for(String mensagem : listaMensagensPosts)
+		 {
+				 List<String> palavrasChaveMensagem = extrairPalavrasChave(mensagem);
+				 listaMensagensSemStopWords.addAll(palavrasChaveMensagem);
+		 }
+
+		 return listaMensagensSemStopWords;
+	}
+
+	private List<String> obterListaMensagensPosts(String nomeUsuarioLogado)
+	{
+		List<org.catfeed.Post> listaPostsUsuarioLogado = postDAO.recuperarPostsPorUsuario(nomeUsuarioLogado);
+		List<String> listaMensagensPosts = new ArrayList<String>();
+		
+		 for(org.catfeed.Post post : listaPostsUsuarioLogado)
+		 {
+			 listaMensagensPosts.add(post.getMensagem());
+		 }
+		 
+		 return listaMensagensPosts;
+	}
+	
+	private String obterNomeUsuarioLogado(String accessToken)
+	{
+		String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+		 
+		User usuarioLogado = facebookClient.fetchObject("me", User.class);
+		String nomeUsuarioLogado = usuarioLogado.getName();
+		
+		return nomeUsuarioLogado;
+	}
+	
+	private void persistirPostsSemCategoria(Connection<Post> newsFeed, User usuarioLogado)
 	{
 		String nomeUsuarioLogado = formatarNomeUsuarioLogado(usuarioLogado);
 		
@@ -112,7 +128,7 @@ public class FeedWS
 		{
 			if(post.getMessage() != null)
 			{
-				postDAO.salvar(post, nomeUsuarioLogado);
+				postDAO.salvar(post, nomeUsuarioLogado, ID_SEM_CATEGORIA);
 			}
 		}
 	}
@@ -125,11 +141,11 @@ public class FeedWS
 		 return string;
 	}
 	
-	protected List<KeyWord> prepararListaKeyWords(List<String> palavrasChaveFeed)
+	protected List<KeyWord> prepararListaKeyWords(List<String> listaMensagensSemStopWords)
 	{
 		Map<String, Integer> mapaFrequenciaPalavrasChave = new HashMap<String, Integer>();
 		
-		for(String palavraChave : palavrasChaveFeed)
+		for(String palavraChave : listaMensagensSemStopWords)
 		{
 			Integer frequencia = mapaFrequenciaPalavrasChave.get(palavraChave);
 			mapaFrequenciaPalavrasChave.put(palavraChave, (frequencia == null) ? 1 : frequencia + 1);
