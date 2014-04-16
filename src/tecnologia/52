@@ -1,0 +1,50 @@
+A falha de segurança apelidada de "Heartbleed" é uma coisa das mais graves já divulgadas. Esta coluna explicou algumas questões na semana passada (veja aqui), mas, por se tratar de um assunto técnico e complicado, volta a explicar a questão hoje, no formato "perguntas e respostas". Vamos lá.
+
+Onde está a falha "heartbleed"? Por que ela tem esse nome?
+A brecha se encontra nas funções de "heartbeat" do OpenSSL. 
+
+O que é o OpenSSL?
+O OpenSSL é uma biblioteca, ou seja, um software que pode ser usado ("chamado") por outros softwares para dar suporte aos protocolos SSL e TLS. O OpenSSL não é usado diretamente, mas ele pode ser usado por um navegador de internet, por exemplo. Dessa forma, o navegador não precisa criar suas próprias funções para conseguir acessar sites seguros (HTTPS).
+
+O que é o SSL e o TLS?
+O SSL e o TLS são as camadas de segurança criptográfica que podem proteger protocolos inseguros, como o HTTP (sites web), SMTP, IMAP e POP3 (e-mail), entre outros. Normalmente, esses protocolos, quando usados, trafegam seus dados em texto simples, ou seja, vulneráveis a interceptação e leitura. Quando o SSL ou TLS são usados, o conteúdo da comunicação é codificado, impedindo que um intermediário leia a conexão, mesmo que tenha conseguido interceptá-la.
+
+Em um exemplo prático, qualquer pessoa pode ler os dados que trafegam em uma rede Wi-Fi sem senha. Já o conteúdo protegido por SSL ou TLS, mesmo quando capturado, estará todo embaralhado e não poderá ser lido.
+
+O que é o "heartbeat"?
+Heartbeat ("batimento cardíaco") é um "remendo" para alguns protocolos que não fornecem uma função de conexão permanente. Um exemplo de conexão permanente é uma chamada telefônica (ela continua aberta mesmo quando ninguém fala nada), mas na internet, que funciona com pacotes, uma conexão pode ser aberta e fechada toda vez que dados são trocados. Esse processo de fechamento e reabertura não é muito eficiente; portanto, é útil que dois computadores criem uma conexão permanente em certos casos. 
+
+O Heartbeat é usado para manter essas conexões "vivas". O uso dele não é obrigatório, e a maioria dos sites que não estava vulnerável tinha o heartbeat desabilitado.
+
+Qual o problema que existe no Heartbeat do OpenSSL?
+Para verificar que tudo está funcionando de forma adequada, existe uma mensagem padrão do heartbeat que exige que a outra ponta da conexão retorne uma mensagem igual a que recebeu. O OpenSSL lê a mensagem recebida da memória e a retorna, como deve fazer.
+
+No entanto, o OpenSSL lê a memória obedecendo um campo da mensagem que diz o tamanho dela. Mas o OpenSSL não verifica se a mensagem tinha mesmo o tamanho especificado. O ataque, portanto, consiste em enviar uma mensagem que diz "eu tenho 64 KB", quando na verdade a mensagem tem apenas alguns bytes. O OpenSSL lerá 64 KB da memória e retornará isso ao hacker, permitindo a leitura da memória do software que faz uso do OpenSSL.
+
+Por que isso afeta sites de internet?
+Assim como você precisa navegar na internet com o Internet Explorer, Chrome ou Firefox, os sites que estão na web também precisam fazer uso de um programa que fica "na escuta" para receber solicitações e enviar as páginas aos navegadores. Os dois softwares mais populares para essa função, Apache e Nginx, fazem uso do OpenSSL.
+
+O que acontece, na prática?
+Quando o OpenSSL lê a memória do Apache ou do Nginx, ele pode acabar lendo dados como senhas em formulários de login, chaves de sessão - que mantém um internauta logado no site -, bem como a própria "chave privada" usada pelo servidor para manter a segurança da conexão. Ou seja, um hacker pode roubar dados que estão sendo processados pelo site em tempo real, 64 KB por vez. Essa limitação de 64 KB não significa muito, porque o hacker pode explorar a falha repetidamente e simultaneamente, obtendo boa parte dos dados que estão sendo processados.
+
+Obtendo a chave privada, um hacker poderia desembaralhar dados interceptados, voltando a tê-los em texto simples. Mas, mesmo que um hacker não obtenha a chave e não tenha condições de interceptar qualquer tráfego, a leitura direta da memória ainda permitirá que ele extravie informações.
+
+O problema não afeta navegadores?
+Navegadores web optam por utilizar outras bibliotecas SSL, ou seja, não fazem uso do OpenSSL e por isso não são vulneráveis a essa falha específica. Também é mais difícil explorar navegadores, já que, ao contrário dos servidores, eles não ficam na internet aguardando por conexões externas.
+
+Dito isso, o problema existe, sim, na plataforma para celulares Android. Ainda não está claro de que forma a vulnerabilidade poderia ser explorada e quais as consequências. O problema existe na versão 4.1.
+
+A brecha é realmente séria?
+O especialista em segurança Bruce Schneier definiu da seguinte forma: "em uma escala de 0 a 10, estamos em 11". A brecha ficou aberta por dois anos e não há maneira de saber quais dados podem ter sido roubados nesse período. 
+
+A empresa de segurança CloudFlare colocou no ar um servidor vulnerável para testes, desafiando especialistas a extrair a chave privada. A chave foi extraída com sucesso mais de uma vez. Em outras palavras, os riscos não são "teóricos".
+
+Os prestadores de serviços são culpados?
+Não. Ser vulnerável a essa falha não é sinal de nenhum tipo de prática de segurança inadequada por parte dos provedores de conteúdo e prestadores de serviço on-line. A brecha existia na versão mais atualizada do OpenSSL.
+
+O que eu posso fazer?
+A recomendação é que senhas sejam trocadas, mas, na prática, é bem pouco provável que sua senha especificamente tenha sido roubada. Senhas foram roubadas, sem dúvida alguma, mas ninguém sabe exatamente quais. Se você tem coisas importantes em qualquer um dos serviços afetados - como Dropbox, Yahoo Mail, Tumblr e Steam - vale realizar uma troca de senha. O Google, que foi afetado, não recomenda a troca de senha. (Esta coluna afirmou na semana passada que o Twitter estava entre os serviços vulneráveis. O Twitter faz uso do OpenSSL, mas disse que não foi afetado - provavelmente por não fazer uso do heartbeat.)
+
+Troque senhas em serviços que são importantes para você ou caso você receba uma recomendação específica do provedor de serviço. Não adianta trocar uma senha antes da falha ter sido corrigida. 
+
+Lembre-se: essa brecha não está no seu PC. Embora em muitos casos estejamos acostumados a ouvir recomendações para internautas, dessa vez quem precisa lidar com o problema são as equipes de segurança dos provedores de serviço. Eles têm total capacidade de obrigar uma troca de senha, caso entendam que isso seja necessário. Não precisam "pedir" nem "recomendar".
