@@ -14,17 +14,27 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.catfeed.KeyWord;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
+import org.catfeed.Categoria;
+import org.catfeed.KeyWord;
 import org.catfeed.StopWord;
+import org.catfeed.dao.CategoriaDAO;
 import org.catfeed.dao.PostDAO;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.aliasi.classify.Classification;
+import com.aliasi.classify.Classified;
+import com.aliasi.classify.DynamicLMClassifier;
+import com.aliasi.classify.JointClassification;
+import com.aliasi.classify.JointClassifier;
+import com.aliasi.classify.JointClassifierEvaluator;
+import com.aliasi.lm.NGramProcessLM;
+import com.aliasi.util.AbstractExternalizable;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -38,9 +48,15 @@ import com.restfb.types.User;
 @Path("feed")
 public class FeedWS
 {
+	private static final boolean OPCAO_ARMAZENAR_CATEGORIAS = true;
+
+	private static final int CONSTANTE_NGRAM = 6;
+
 	private static final int ID_SEM_CATEGORIA = 1;
 	
 	private PostDAO postDAO = new PostDAO();
+	
+	private CategoriaDAO categoriaDAO = new CategoriaDAO();
 
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON})
@@ -83,54 +99,39 @@ public class FeedWS
 		return new Gson().toJson(listaKeyWords);
 	}
 	
-	private List<String> obterListaMensagensSemStopWords(List<String> listaMensagensPosts)
-	{
-		 List<String> listaMensagensSemStopWords = new ArrayList<String>();
-
-		 for(String mensagem : listaMensagensPosts)
-		 {
-				 List<String> palavrasChaveMensagem = extrairPalavrasChave(mensagem);
-				 listaMensagensSemStopWords.addAll(palavrasChaveMensagem);
-		 }
-
-		 return listaMensagensSemStopWords;
-	}
-
-	private List<String> obterListaMensagensPosts(String nomeUsuarioLogado)
-	{
-		List<org.catfeed.Post> listaPostsUsuarioLogado = postDAO.recuperarPostsPorUsuario(nomeUsuarioLogado);
-		List<String> listaMensagensPosts = new ArrayList<String>();
+	@SuppressWarnings("unchecked")
+	protected String obterCategoriaMensagem(String mensagem) throws ClassNotFoundException, IOException
+	{	
+		String[] categorias = obterCategorias();
 		
-		 for(org.catfeed.Post post : listaPostsUsuarioLogado)
-		 {
-			 listaMensagensPosts.add(post.getMensagem());
-		 }
-		 
-		 return listaMensagensPosts;
-	}
-	
-	private String obterNomeUsuarioLogado(String accessToken)
-	{
-		String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
-		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
-		 
-		User usuarioLogado = facebookClient.fetchObject("me", User.class);
-		String nomeUsuarioLogado = usuarioLogado.getName();
+		DynamicLMClassifier<NGramProcessLM> classifier = DynamicLMClassifier.createNGramProcess(categorias, CONSTANTE_NGRAM);
 		
-		return nomeUsuarioLogado;
-	}
-	
-	private void persistirPostsSemCategoria(Connection<Post> newsFeed, User usuarioLogado)
-	{
-		String nomeUsuarioLogado = formatarNomeUsuarioLogado(usuarioLogado);
-		
-		for(Post post : newsFeed.getData())
+		for(int i = 0; i < categorias.length; ++i)
 		{
-			if(post.getMessage() != null)
+
+			List<org.catfeed.Post> listaPostsClassificados = postDAO.recuperarPostsComCategoria();
+			List<String> listaMensagemPosts = obterListaMensagensPosts(listaPostsClassificados);
+			
+			for(String mensagemPost : listaMensagemPosts)
 			{
-				postDAO.salvar(post, nomeUsuarioLogado, ID_SEM_CATEGORIA);
+				Classification classification = new Classification(categorias[i]);
+				Classified<CharSequence> classified = new Classified<CharSequence>(mensagemPost, classification);
+				
+				classifier.handle(classified);
 			}
 		}
+			
+	    JointClassifier<CharSequence> compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
+	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, categorias, OPCAO_ARMAZENAR_CATEGORIAS);
+
+        Classification classification = new Classification(categorias[0]);
+        Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
+        evaluator.handle(classified);
+        
+        JointClassification jc = compiledClassifier.classify(mensagem);
+        String bestCategory = jc.bestCategory();
+			
+		return bestCategory;
 	}
 
 	protected String transformarJSONEmString(String json, String parametro)
@@ -203,8 +204,88 @@ public class FeedWS
 		return palavrasChave;
 	}
 	
+	private List<String> obterListaMensagensSemStopWords(List<String> listaMensagensPosts)
+	{
+		 List<String> listaMensagensSemStopWords = new ArrayList<String>();
+
+		 for(String mensagem : listaMensagensPosts)
+		 {
+				 List<String> palavrasChaveMensagem = extrairPalavrasChave(mensagem);
+				 listaMensagensSemStopWords.addAll(palavrasChaveMensagem);
+		 }
+
+		 return listaMensagensSemStopWords;
+	}
+
+	private List<String> obterListaMensagensPosts(String nomeUsuarioLogado)
+	{
+		List<org.catfeed.Post> listaPostsUsuarioLogado = postDAO.recuperarPostsPorUsuario(nomeUsuarioLogado);
+		List<String> listaMensagensPosts = new ArrayList<String>();
+		
+		 for(org.catfeed.Post post : listaPostsUsuarioLogado)
+		 {
+			 listaMensagensPosts.add(post.getMensagem());
+		 }
+		 
+		 return listaMensagensPosts;
+	}
+	
+	private List<String> obterListaMensagensPosts(List<org.catfeed.Post> listaPosts)
+	{
+		List<String> listaMensagensPosts = new ArrayList<String>();
+		
+		 for(org.catfeed.Post post : listaPosts)
+		 {
+			 listaMensagensPosts.add(post.getMensagem());
+		 }
+		 
+		 return listaMensagensPosts;
+	}
+	
+	private String obterNomeUsuarioLogado(String accessToken)
+	{
+		String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+		 
+		User usuarioLogado = facebookClient.fetchObject("me", User.class);
+		String nomeUsuarioLogado = usuarioLogado.getName();
+		
+		return nomeUsuarioLogado;
+	}
+	
+	private void persistirPostsSemCategoria(Connection<Post> newsFeed, User usuarioLogado)
+	{
+		String nomeUsuarioLogado = formatarNomeUsuarioLogado(usuarioLogado);
+		
+		for(Post post : newsFeed.getData())
+		{
+			if(post.getMessage() != null)
+			{
+				postDAO.salvar(post, nomeUsuarioLogado, ID_SEM_CATEGORIA);
+			}
+		}
+	}
+	
 	private String formatarNomeUsuarioLogado(User usuarioLogado)
 	{
 		return usuarioLogado.getFirstName() + ' ' + usuarioLogado.getLastName();
+	}
+	
+	private String[] obterCategorias()
+	{
+		List<Categoria> listaCategorias = categoriaDAO.recuperarTodasCategorias();
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(Categoria categoria : listaCategorias)
+		{
+			sb.append(categoria.getNome() + ",");
+		}
+		
+		sb.deleteCharAt(sb.length()-1);
+
+		String[] categorias = sb.toString().split(",");
+		
+		return categorias;
 	}
 }

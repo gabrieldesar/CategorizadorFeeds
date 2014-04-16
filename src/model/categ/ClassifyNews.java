@@ -1,21 +1,19 @@
 package categ;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.catfeed.dao.PostDAO;
+
 import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
-import com.aliasi.classify.ConfusionMatrix;
 import com.aliasi.classify.DynamicLMClassifier;
 import com.aliasi.classify.JointClassification;
 import com.aliasi.classify.JointClassifier;
 import com.aliasi.classify.JointClassifierEvaluator;
-import com.aliasi.classify.LMClassifier;
-
 import com.aliasi.lm.NGramProcessLM;
-
 import com.aliasi.util.AbstractExternalizable;
-
-import java.io.File;
-import java.io.IOException;
-
 import com.aliasi.util.Files;
 
 public class ClassifyNews {
@@ -32,15 +30,18 @@ public class ClassifyNews {
 
     private static int NGRAM_SIZE = 6;
 
-    public static void main(String[] args)
-        throws ClassNotFoundException, IOException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException
+    {
 
         DynamicLMClassifier<NGramProcessLM> classifier
             = DynamicLMClassifier.createNGramProcess(CATEGORIES,NGRAM_SIZE);
 
-        for(int i=0; i<CATEGORIES.length; ++i) {
+        for(int i=0; i<CATEGORIES.length; ++i)
+        {
             File classDir = new File(TRAINING_DIR,CATEGORIES[i]);
-            if (!classDir.isDirectory()) {
+        
+            if (!classDir.isDirectory())
+            {
                 String msg = "Could not find training directory="
                     + classDir
                     + "\nHave you unpacked 4 newsgroups?";
@@ -49,7 +50,8 @@ public class ClassifyNews {
             }
 
             String[] trainingFiles = classDir.list();
-            for (int j = 0; j < trainingFiles.length; ++j) {
+            for (int j = 0; j < trainingFiles.length; ++j)
+            {
                 File file = new File(classDir,trainingFiles[j]);
                 String text = Files.readFromFile(file,"ISO-8859-1");
                 System.out.println("Training on " + CATEGORIES[i] + "/" + trainingFiles[j]);
@@ -60,6 +62,7 @@ public class ClassifyNews {
                 classifier.handle(classified);
             }
         }
+        
         //compiling
         System.out.println("Compiling");
         @SuppressWarnings("unchecked") // we created object so know it's safe
@@ -73,15 +76,24 @@ public class ClassifyNews {
                                                          CATEGORIES,
                                                          storeCategories);
         
-        //novo código
-        	String text = "Galera, uma pausa para uma boa oportunidade: Quer aprender as tecnologias web mais presentes no seu dia a dia e ainda conhecer um pouco do que a gente faz? Não perca a chance, se inscreva já em: http://ejcm.com.br/workshop";
-        	Classification classification = new Classification(CATEGORIES[0]);
-        	Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
-        	evaluator.handle(classified);
-        	JointClassification jc = compiledClassifier.classify(text);
-        	String bestCategory = jc.bestCategory();
-        	System.out.println("Melhor categoria: " +bestCategory);
-        	System.out.println(jc.toString());
-        
+        //novo cï¿½digo
+        	PostDAO postDAO = new PostDAO();
+        	
+        	List<org.catfeed.Post> listaPosts = postDAO.recuperarPostsSemCategoria();
+
+        	for(org.catfeed.Post post: listaPosts)
+        	{
+        	
+	        	String text = post.getMensagem();
+	        	Classification classification = new Classification(CATEGORIES[0]);
+	        	Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
+	        	evaluator.handle(classified);
+	        	JointClassification jc = compiledClassifier.classify(text);
+	        	String bestCategory = jc.bestCategory();
+	        	System.out.println("Mensagem: " +text);
+	        	System.out.println("Melhor categoria: " +bestCategory);
+	        	System.out.println(jc.toString());
+        	
+        	}
     }
 }
