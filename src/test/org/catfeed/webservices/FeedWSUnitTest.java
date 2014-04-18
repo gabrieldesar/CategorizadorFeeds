@@ -165,13 +165,25 @@ public class FeedWSUnitTest
 	}
 	
 	@Test
-	public void testObterCategoriaMensagem_DeveExibirCategoriaCorreta() throws ClassNotFoundException, IOException
+	public void testObterCategoriaMensagem_PostContidoNaBaseDeConhecimento_DeveExibirCategoriaCorreta() throws ClassNotFoundException, IOException
 	{
 		FeedWS feedWS = new FeedWS();
 		String mensagem = "Bendito o que vem em nome do Senhor. Hosana nas alturas!";
 
 		String categoria = feedWS.obterCategoriaMensagem(mensagem);
 		
-		assertEquals("Religião", categoria);
+		assertEquals("religiao", categoria);
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_PostInedito_DeveExibirCategoriaCorreta() throws ClassNotFoundException, IOException
+	{
+		FeedWS feedWS = new FeedWS();
+		String mensagem = "CBF divulga tabela detalhada da segunda fase da Copa do Brasil" +
+						  "Confira os jogos, as datas e os horários em http://glo.bo/1r4XMdt";
+
+		String categoria = feedWS.obterCategoriaMensagem(mensagem);
+		
+		assertEquals("esportes", categoria);
 	}
 }

@@ -1,5 +1,6 @@
 package org.catfeed.webservices;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -14,27 +15,29 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
-import org.catfeed.Categoria;
 import org.catfeed.KeyWord;
 import org.catfeed.StopWord;
-import org.catfeed.dao.CategoriaDAO;
 import org.catfeed.dao.PostDAO;
+import org.catfeed.exceptions.DiretorioInvalidoException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
+import com.aliasi.classify.ConfusionMatrix;
 import com.aliasi.classify.DynamicLMClassifier;
 import com.aliasi.classify.JointClassification;
 import com.aliasi.classify.JointClassifier;
 import com.aliasi.classify.JointClassifierEvaluator;
 import com.aliasi.lm.NGramProcessLM;
 import com.aliasi.util.AbstractExternalizable;
+import com.aliasi.util.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -48,16 +51,24 @@ import com.restfb.types.User;
 @Path("feed")
 public class FeedWS
 {
+	private static final File DIRETORIO_CATEGORIAS = new File("src/categorias");
+
 	private static final boolean OPCAO_ARMAZENAR_CATEGORIAS = true;
 
 	private static final int CONSTANTE_NGRAM = 6;
 
 	private static final int ID_SEM_CATEGORIA = 1;
 	
+	private static final String[] CATEGORIAS = { "cotidiano",
+                                                 "esportes",
+                                                 "politica",
+                                                 "religiao",
+                                                 "tecnologia" };
+	
+	private static Logger log = Logger.getLogger(FeedWS.class.getName());
+	
 	private PostDAO postDAO = new PostDAO();
 	
-	private CategoriaDAO categoriaDAO = new CategoriaDAO();
-
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON})
 	@Produces({ MediaType.APPLICATION_JSON})
@@ -101,37 +112,64 @@ public class FeedWS
 	
 	@SuppressWarnings("unchecked")
 	protected String obterCategoriaMensagem(String mensagem) throws ClassNotFoundException, IOException
-	{	
-		String[] categorias = obterCategorias();
+	{		
+		DynamicLMClassifier<NGramProcessLM> classifier = DynamicLMClassifier.createNGramProcess(CATEGORIAS, CONSTANTE_NGRAM);
 		
-		DynamicLMClassifier<NGramProcessLM> classifier = DynamicLMClassifier.createNGramProcess(categorias, CONSTANTE_NGRAM);
-		
-		for(int i = 0; i < categorias.length; ++i)
+		for(int i = 0; i < CATEGORIAS.length; ++i)
 		{
+			File diretorioCategoriasBaseConhecimento = new File(DIRETORIO_CATEGORIAS, CATEGORIAS[i]);
+	        
+            if (!diretorioCategoriasBaseConhecimento.isDirectory())
+            {
+                throw new DiretorioInvalidoException();
+            }
 
-			List<org.catfeed.Post> listaPostsClassificados = postDAO.recuperarPostsComCategoria();
-			List<String> listaMensagemPosts = obterListaMensagensPosts(listaPostsClassificados);
-			
-			for(String mensagemPost : listaMensagemPosts)
-			{
-				Classification classification = new Classification(categorias[i]);
-				Classified<CharSequence> classified = new Classified<CharSequence>(mensagemPost, classification);
-				
-				classifier.handle(classified);
-			}
+            String[] arquivosBaseConhecimento = diretorioCategoriasBaseConhecimento.list();
+            
+            for (int j = 0; j < arquivosBaseConhecimento.length; ++j)
+            {
+                File file = new File(diretorioCategoriasBaseConhecimento, arquivosBaseConhecimento[j]);
+                
+                String text = Files.readFromFile(file,"ISO-8859-1");
+                
+                log.debug("Training on " + CATEGORIAS[i] + "/" + arquivosBaseConhecimento[j]);
+                
+                Classification classification = new Classification(CATEGORIAS[i]);
+                
+                Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
+                
+                classifier.handle(classified);
+            }
 		}
+		
+        log.debug("Compiling");
 			
 	    JointClassifier<CharSequence> compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
-	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, categorias, OPCAO_ARMAZENAR_CATEGORIAS);
+	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIAS, OPCAO_ARMAZENAR_CATEGORIAS);
 
-        Classification classification = new Classification(categorias[0]);
-        Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
-        evaluator.handle(classified);
-        
-        JointClassification jc = compiledClassifier.classify(mensagem);
+    	log.info("Testing on " + CATEGORIAS[0] + "/" + mensagem + " ");
+            
+    	Classification classification = new Classification(CATEGORIAS[0]);
+    	Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
+    	
+    	evaluator.handle(classified);
+    	
+    	JointClassification jc = compiledClassifier.classify(mensagem);
+    	
         String bestCategory = jc.bestCategory();
-			
-		return bestCategory;
+        String details = jc.toString();
+        
+        log.info("Got best category of: " + bestCategory);
+        log.debug(details);
+        log.info("---------------");
+	
+        ConfusionMatrix confMatrix = evaluator.confusionMatrix();
+        log.debug("Total Accuracy: " + confMatrix.totalAccuracy());
+
+        log.debug("\nFULL EVAL");
+        log.debug(evaluator);
+        
+        return bestCategory;
 	}
 
 	protected String transformarJSONEmString(String json, String parametro)
@@ -229,19 +267,7 @@ public class FeedWS
 		 
 		 return listaMensagensPosts;
 	}
-	
-	private List<String> obterListaMensagensPosts(List<org.catfeed.Post> listaPosts)
-	{
-		List<String> listaMensagensPosts = new ArrayList<String>();
 		
-		 for(org.catfeed.Post post : listaPosts)
-		 {
-			 listaMensagensPosts.add(post.getMensagem());
-		 }
-		 
-		 return listaMensagensPosts;
-	}
-	
 	private String obterNomeUsuarioLogado(String accessToken)
 	{
 		String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
@@ -269,23 +295,5 @@ public class FeedWS
 	private String formatarNomeUsuarioLogado(User usuarioLogado)
 	{
 		return usuarioLogado.getFirstName() + ' ' + usuarioLogado.getLastName();
-	}
-	
-	private String[] obterCategorias()
-	{
-		List<Categoria> listaCategorias = categoriaDAO.recuperarTodasCategorias();
-		
-		StringBuilder sb = new StringBuilder();
-		
-		for(Categoria categoria : listaCategorias)
-		{
-			sb.append(categoria.getNome() + ",");
-		}
-		
-		sb.deleteCharAt(sb.length()-1);
-
-		String[] categorias = sb.toString().split(",");
-		
-		return categorias;
 	}
 }
