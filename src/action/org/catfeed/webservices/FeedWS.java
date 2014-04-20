@@ -25,7 +25,7 @@ import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
-import org.catfeed.KeyWord;
+import org.catfeed.Keyword;
 import org.catfeed.StopWord;
 import org.catfeed.dao.PostDAO;
 import org.catfeed.exceptions.DiretorioInvalidoException;
@@ -112,7 +112,7 @@ public class FeedWS
 		List<String> listaMensagensSemStopWords = obterListaMensagensSemStopWords(listaMensagensPosts);
 		List<String> listaMensagensTermosRelevantes = obterListaMensagensTermosRelevantes(listaMensagensSemStopWords);
 		
-		List<KeyWord> listaKeyWords = prepararListaKeyWords(listaMensagensTermosRelevantes);
+		List<Keyword> listaKeyWords = prepararListaKeyWords(listaMensagensTermosRelevantes);
 		 
 		return new Gson().toJson(listaKeyWords);
 	}
@@ -198,7 +198,7 @@ public class FeedWS
 		 return string;
 	}
 	
-	protected List<KeyWord> prepararListaKeyWords(List<String> listaMensagensTermosRelevantes)
+	protected List<Keyword> prepararListaKeyWords(List<String> listaMensagensTermosRelevantes)
 	{
 		Map<String, Integer> mapaFrequenciaTermos = new HashMap<String, Integer>();
 		
@@ -214,11 +214,11 @@ public class FeedWS
 			}
 		}
 		
-		List<KeyWord> listaKeyWords = new ArrayList<KeyWord>();
+		List<Keyword> listaKeyWords = new ArrayList<Keyword>();
 		
 		for (Map.Entry<String, Integer> entry : mapaFrequenciaTermos.entrySet())
 		{
-			KeyWord palavraChave = new KeyWord(entry.getKey(), entry.getValue());
+			Keyword palavraChave = new Keyword(entry.getKey(), entry.getValue());
 
 			listaKeyWords.add(palavraChave);
 		}

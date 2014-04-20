@@ -1,12 +1,12 @@
 package org.catfeed;
 
-public class KeyWord implements Comparable<KeyWord>
+public class Keyword implements Comparable<Keyword>
 {
 	String text;
 	
 	Integer weight;
 
-	public KeyWord(String text, Integer weight)
+	public Keyword(String text, Integer weight)
 	{
 		this.text = text;
 		this.weight = weight;
@@ -22,9 +22,9 @@ public class KeyWord implements Comparable<KeyWord>
 		return weight;
 	}
 	
-	public int compareTo(KeyWord compareKeyWord)
+	public int compareTo(Keyword compareKeyWord)
 	{
-		Integer compareWeight = ((KeyWord) compareKeyWord).getWeight(); 
+		Integer compareWeight = ((Keyword) compareKeyWord).getWeight(); 
  
 		return compareWeight - this.weight;
 	}	

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.catfeed.KeyWord;
+import org.catfeed.Keyword;
 import org.junit.Test;
 
 public class FeedWSUnitTest
@@ -105,22 +105,27 @@ public class FeedWSUnitTest
 	public void testPrepararListaKeyWords_DeveConterFrequenciaCorreta()
 	{
 		FeedWS feedWS = new FeedWS();
-		List<String> palavrasChave = new ArrayList<String>();
-		palavrasChave.add("amiga");
-		palavrasChave.add("amiga");
-		palavrasChave.add("amiga");
-		palavrasChave.add("colega");
-		palavrasChave.add("colega");
-		palavrasChave.add("parceira");
-		palavrasChave.add("conhecido");
 		
-		List<KeyWord> listaKeyWords = feedWS.prepararListaKeyWords(palavrasChave);
+		String mensagem1 = "luta luta luta programa";
+		String mensagem2 = "programa 2014";
+		String mensagem3 = "programa professores";
+		
+		List<String> mensagensTermosRelevantes = new ArrayList<String>();
+		
+		mensagensTermosRelevantes.add(mensagem1);
+		mensagensTermosRelevantes.add(mensagem2);
+		mensagensTermosRelevantes.add(mensagem3);
+		
+		
+		List<Keyword> listaKeyWords = feedWS.prepararListaKeyWords(mensagensTermosRelevantes);
+		
+		System.out.println(listaKeyWords);
 		
 		assertEquals(4, listaKeyWords.size());
-		assertEquals("amiga", listaKeyWords.get(0).getText());
+		assertEquals("programa", listaKeyWords.get(0).getText());
 		assertEquals(new Integer(3), listaKeyWords.get(0).getWeight());
-		assertEquals("colega", listaKeyWords.get(1).getText());
-		assertEquals(new Integer(2), listaKeyWords.get(1).getWeight());
+		assertEquals("luta", listaKeyWords.get(3).getText());
+		assertEquals(new Integer(1), listaKeyWords.get(3).getWeight());
 	}
 	
 	@Test
