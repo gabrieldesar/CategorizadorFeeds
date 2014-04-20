@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -51,6 +54,8 @@ import com.restfb.types.User;
 @Path("feed")
 public class FeedWS
 {
+	private static final double TFIDF_MINIMO_TERMO_RELEVANTE = 3.0;
+
 	private static final File DIRETORIO_CATEGORIAS = new File("src/categorias");
 
 	private static final boolean OPCAO_ARMAZENAR_CATEGORIAS = true;
@@ -105,16 +110,58 @@ public class FeedWS
 		
 		List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
 		List<String> listaMensagensSemStopWords = obterListaMensagensSemStopWords(listaMensagensPosts);
-		List<KeyWord> listaKeyWords = prepararListaKeyWords(listaMensagensSemStopWords);
+		List<String> listaMensagensTermosRelevantes = obterListaMensagensTermosRelevantes(listaMensagensSemStopWords);
+		
+		List<KeyWord> listaKeyWords = prepararListaKeyWords(listaMensagensTermosRelevantes);
 		 
 		return new Gson().toJson(listaKeyWords);
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected String obterCategoriaMensagem(String mensagem) throws ClassNotFoundException, IOException
 	{		
 		DynamicLMClassifier<NGramProcessLM> classifier = DynamicLMClassifier.createNGramProcess(CATEGORIAS, CONSTANTE_NGRAM);
 		
+		treinarBaseConhecimento(classifier);
+		
+        String bestCategory = classificarMensagem(mensagem, classifier);
+        
+        return bestCategory;
+	}
+
+	@SuppressWarnings("unchecked")
+	private String classificarMensagem(String mensagem,	DynamicLMClassifier<NGramProcessLM> classifier)	throws ClassNotFoundException, IOException
+	{
+		log.debug("Compiling");
+			
+	    JointClassifier<CharSequence> compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
+	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIAS, OPCAO_ARMAZENAR_CATEGORIAS);
+
+    	log.info("Testing on " + CATEGORIAS[0] + "/" + mensagem + " ");
+            
+    	Classification classification = new Classification(CATEGORIAS[0]);
+    	Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
+    	
+    	evaluator.handle(classified);
+    	
+    	JointClassification jc = compiledClassifier.classify(mensagem);
+    	
+        String bestCategory = jc.bestCategory();
+        String details = jc.toString();
+        
+        log.info("Got best category of: " + bestCategory);
+        log.debug(details);
+        log.info("---------------");
+	
+        ConfusionMatrix confMatrix = evaluator.confusionMatrix();
+        log.debug("Total Accuracy: " + confMatrix.totalAccuracy());
+
+        log.debug("\nFULL EVAL");
+        log.debug(evaluator);
+		return bestCategory;
+	}
+
+	private void treinarBaseConhecimento(DynamicLMClassifier<NGramProcessLM> classifier) throws IOException
+	{
 		for(int i = 0; i < CATEGORIAS.length; ++i)
 		{
 			File diretorioCategoriasBaseConhecimento = new File(DIRETORIO_CATEGORIAS, CATEGORIAS[i]);
@@ -141,35 +188,6 @@ public class FeedWS
                 classifier.handle(classified);
             }
 		}
-		
-        log.debug("Compiling");
-			
-	    JointClassifier<CharSequence> compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
-	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIAS, OPCAO_ARMAZENAR_CATEGORIAS);
-
-    	log.info("Testing on " + CATEGORIAS[0] + "/" + mensagem + " ");
-            
-    	Classification classification = new Classification(CATEGORIAS[0]);
-    	Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
-    	
-    	evaluator.handle(classified);
-    	
-    	JointClassification jc = compiledClassifier.classify(mensagem);
-    	
-        String bestCategory = jc.bestCategory();
-        String details = jc.toString();
-        
-        log.info("Got best category of: " + bestCategory);
-        log.debug(details);
-        log.info("---------------");
-	
-        ConfusionMatrix confMatrix = evaluator.confusionMatrix();
-        log.debug("Total Accuracy: " + confMatrix.totalAccuracy());
-
-        log.debug("\nFULL EVAL");
-        log.debug(evaluator);
-        
-        return bestCategory;
 	}
 
 	protected String transformarJSONEmString(String json, String parametro)
@@ -180,33 +198,39 @@ public class FeedWS
 		 return string;
 	}
 	
-	protected List<KeyWord> prepararListaKeyWords(List<String> listaMensagensSemStopWords)
+	protected List<KeyWord> prepararListaKeyWords(List<String> listaMensagensTermosRelevantes)
 	{
-		Map<String, Integer> mapaFrequenciaPalavrasChave = new HashMap<String, Integer>();
+		Map<String, Integer> mapaFrequenciaTermos = new HashMap<String, Integer>();
 		
-		for(String palavraChave : listaMensagensSemStopWords)
+		for(String mensagem : listaMensagensTermosRelevantes)
 		{
-			Integer frequencia = mapaFrequenciaPalavrasChave.get(palavraChave);
-			mapaFrequenciaPalavrasChave.put(palavraChave, (frequencia == null) ? 1 : frequencia + 1);
+			String[] termos = mensagem.split(" ");
+			Set<String> conjuntoTermos = new HashSet<String>(Arrays.asList(termos));
+			
+			for(String termo : conjuntoTermos)
+			{
+				Integer frequencia = mapaFrequenciaTermos.get(termo);
+				mapaFrequenciaTermos.put(termo, (frequencia == null) ? 1 : frequencia + 1);
+			}
 		}
 		
-		List<KeyWord> listaPalavrasChave = new ArrayList<KeyWord>();
+		List<KeyWord> listaKeyWords = new ArrayList<KeyWord>();
 		
-		for (Map.Entry<String, Integer> entry : mapaFrequenciaPalavrasChave.entrySet())
+		for (Map.Entry<String, Integer> entry : mapaFrequenciaTermos.entrySet())
 		{
 			KeyWord palavraChave = new KeyWord(entry.getKey(), entry.getValue());
 
-			listaPalavrasChave.add(palavraChave);
+			listaKeyWords.add(palavraChave);
 		}
 		
-		Collections.sort(listaPalavrasChave);
+		Collections.sort(listaKeyWords);
 		
-		return listaPalavrasChave;
+		return listaKeyWords;
 	}
 
-	protected List<String> extrairPalavrasChave(String mensagem)
+	protected String removerStopWords(String mensagem)
 	{
-		List<String> palavrasChave = new ArrayList<String>();
+		StringBuilder stringBuilderMensagemSemStopWords = new StringBuilder();
 		
 		Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_47, new StringReader(mensagem.toLowerCase()));
 
@@ -230,7 +254,8 @@ public class FeedWS
 			while(stopFilter.incrementToken())
 			{
 			    final String token = charTermAttribute.toString().toString();
-			    palavrasChave.add(token);
+			    stringBuilderMensagemSemStopWords.append(token);
+			    stringBuilderMensagemSemStopWords.append(" ");
 			}
 			stopFilter.close();
 		} 
@@ -238,18 +263,112 @@ public class FeedWS
 	    {
 			e.printStackTrace();
 		}
+	    
+	    if(stringBuilderMensagemSemStopWords.length() > 0)
+	    {
+	    	stringBuilderMensagemSemStopWords.deleteCharAt(stringBuilderMensagemSemStopWords.length() - 1);
+	    }
+	    
+	    String mensagemSemStopWords = stringBuilderMensagemSemStopWords.toString();
 		
-		return palavrasChave;
+		return mensagemSemStopWords;
 	}
 	
+	protected Double calcularTfIdf(String termo, String documento, List<String> colecao)
+	{
+		Integer tf = calcularTf(termo, documento);
+		Double idf = calcularIdf(termo, colecao);
+		
+		Double tfIdf = tf * idf;
+		
+		return tfIdf;
+	}
+
+	private Double calcularIdf(String termo, List<String> colecao)
+	{
+		Double numeroDocumentosContemTermo = new Double(0);
+		
+		for(String documento : colecao)
+		{
+			if(documento.contains(termo))
+			{
+				numeroDocumentosContemTermo++;
+			}
+		}
+		
+		if(numeroDocumentosContemTermo == 0)
+		{
+			numeroDocumentosContemTermo = new Double(1);
+		}
+			
+		Integer numeroDocumentos = colecao.size();
+		Double numeroDocumentosDouble = numeroDocumentos.doubleValue();
+		
+		Double idf = Math.log10(numeroDocumentosDouble / numeroDocumentosContemTermo); 
+		
+		return idf;
+	}
+
+	private Integer calcularTf(String termo, String documento)
+	{
+		List<String> listaTermos = Arrays.asList(documento.split(" "));
+		
+		Integer tf = 0;
+		
+		for(String termoIterator : listaTermos)
+		{
+			if(termoIterator.equals(termo))
+			{
+				tf++;
+			}
+		}
+		
+		return tf;
+	}
+	
+	private List<String> obterListaMensagensTermosRelevantes(List<String> colecao)
+	{
+		List<String> listaMensagensTermosRelevantes = new ArrayList<String>(); 
+		
+		for(String documento : colecao)
+		{
+			List<String> listaTermos = Arrays.asList(documento.split(" "));
+			
+			StringBuilder mensagemTermosRelevantes = new StringBuilder();
+			
+			for(String termo : listaTermos)
+			{
+				Double tfIdf = calcularTfIdf(termo, documento, colecao);
+				
+				if(tfIdf >= TFIDF_MINIMO_TERMO_RELEVANTE)
+				{
+					mensagemTermosRelevantes.append(termo);
+					mensagemTermosRelevantes.append(" ");
+				}
+			}
+			
+			if(mensagemTermosRelevantes.length() > 0)
+			{
+				mensagemTermosRelevantes.deleteCharAt(mensagemTermosRelevantes.length() - 1);
+			}
+			
+			if(mensagemTermosRelevantes.length() > 0)
+			{
+				listaMensagensTermosRelevantes.add(mensagemTermosRelevantes.toString());
+			}
+		}
+		
+		return listaMensagensTermosRelevantes;
+	}
+
 	private List<String> obterListaMensagensSemStopWords(List<String> listaMensagensPosts)
 	{
 		 List<String> listaMensagensSemStopWords = new ArrayList<String>();
 
 		 for(String mensagem : listaMensagensPosts)
 		 {
-				 List<String> palavrasChaveMensagem = extrairPalavrasChave(mensagem);
-				 listaMensagensSemStopWords.addAll(palavrasChaveMensagem);
+				 String mensagemSemStopWords = removerStopWords(mensagem);
+				 listaMensagensSemStopWords.add(mensagemSemStopWords);
 		 }
 
 		 return listaMensagensSemStopWords;

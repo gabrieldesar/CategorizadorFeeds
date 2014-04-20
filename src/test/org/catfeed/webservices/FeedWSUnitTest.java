@@ -1,7 +1,6 @@
 package org.catfeed.webservices;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,131 +18,93 @@ public class FeedWSUnitTest
 		String entrada = "{\"accessToken\":\"CAAC8uEGIYe4BAD9tgmerKlOOM4oO5VkkFhsz19oiSgCNAYCZATkQkvV9lDYSDB6DFMLDE0vQFre29dbaUJ0p7onypq2dS6V5S9BQym5l3ZCoROzq8eUtbfPSOJOxCMAXqOKvUtloDH0E4eRqxx8WugGGYNkZAUgUJN2bNNSYDZBgL9ZB5Lwke1b4IyVzTIMpwUxNUrQUBCAZDZD\"}";
 		
 		String saida = feedWS.transformarJSONEmString(entrada, "accessToken");
+
 		String esperado = "CAAC8uEGIYe4BAD9tgmerKlOOM4oO5VkkFhsz19oiSgCNAYCZATkQkvV9lDYSDB6DFMLDE0vQFre29dbaUJ0p7onypq2dS6V5S9BQym5l3ZCoROzq8eUtbfPSOJOxCMAXqOKvUtloDH0E4eRqxx8WugGGYNkZAUgUJN2bNNSYDZBgL9ZB5Lwke1b4IyVzTIMpwUxNUrQUBCAZDZD";
-		
 		assertEquals(esperado, saida);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveRemoverStopWords()
+	public void testRemoverStopWords_DeveRemoverStopWords()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "Motivos de ainda se acreditar na humanidade !!!";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
 		
-		assertEquals(3, palavrasChave.size());
-		assertEquals("motivos",palavrasChave.get(0));
-		assertEquals("acreditar", palavrasChave.get(1));
-		assertEquals("humanidade", palavrasChave.get(2));
+		assertEquals("motivos acreditar humanidade", mensagemPostSemStopWords);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveConverterPalavrasMaiusculas()
+	public void testRemoverStopWords_DeveConverterPalavrasMaiusculas()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "DIAMANTE NEGRO VEIO DA JOALHERIA?";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
 		
-		assertEquals(4, palavrasChave.size());
-		assertEquals("diamante", palavrasChave.get(0));
-		assertEquals("negro", palavrasChave.get(1));
-		assertEquals("veio", palavrasChave.get(2) );
-		assertEquals("joalheria", palavrasChave.get(3));
+		assertEquals("diamante negro veio joalheria", mensagemPostSemStopWords);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveTratarPostIngles()
+	public void testRemoverStopWords_DeveTratarPostsEmIngles()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "Featured Fan Art - Morgana by Maysiria";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
-		
-		assertEquals(5, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "featured");
-		assertEquals(palavrasChave.get(1), "fan");
-		assertEquals(palavrasChave.get(2), "art");
-		assertEquals(palavrasChave.get(3), "morgana");
-		assertEquals(palavrasChave.get(4), "maysiria");
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
+
+		assertEquals("featured fan art morgana maysiria", mensagemPostSemStopWords);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveTratarPostIngles2()
+	public void testRemoverStopWords_DeveTratarPostsEmIngles2()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "To view previous winners please visit the \"Winners\" tab on the Daily";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
 		
-		assertEquals(8, palavrasChave.size());
-		assertEquals(palavrasChave.get(0), "view");
-		assertEquals(palavrasChave.get(1), "previous");
-		assertEquals(palavrasChave.get(2), "winners");
-		assertEquals(palavrasChave.get(3), "please");
-		assertEquals(palavrasChave.get(4), "visit");
-		assertEquals(palavrasChave.get(5), "winners");
-		assertEquals(palavrasChave.get(6), "tab");
-		assertEquals(palavrasChave.get(7), "daily");
+		assertEquals("view previous winners please visit winners tab daily", mensagemPostSemStopWords);
 	}
 	
 
 	@Test
-	public void testExtrairPalavrasChave_DeveTratarHashTags()
+	public void testRemoverStopWords_DeveTratarHashTags()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "#amiga #parceira #segundachata #cansadas #quecheguelogosexta";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
 		
-		assertEquals(5, palavrasChave.size());
-		assertEquals("amiga", palavrasChave.get(0));
-		assertEquals("parceira", palavrasChave.get(1));
-		assertEquals("segundachata", palavrasChave.get(2));
-		assertEquals("cansadas", palavrasChave.get(3));
-		assertEquals("quecheguelogosexta", palavrasChave.get(4));
+		assertEquals("amiga parceira segundachata cansadas quecheguelogosexta", mensagemPostSemStopWords);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveTratarEmoticons()
+	public void testRemoverStopWords_DeveTratarEmoticons()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "fresquin! :)";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
 		
-		assertEquals(1, palavrasChave.size());
-		assertEquals("fresquin", palavrasChave.get(0));
-
+		assertEquals("fresquin", mensagemPostSemStopWords);
 	}
 	
 	@Test
-	public void testExtrairPalavrasChave_DeveTratarEmoticonsEHashTags()
+	public void testRemoverStopWords_DeveTratarEmoticonsEHashTags()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		String mensagemPost = "Sorte mesmo é comprar 455 figurinhas, ficar com 63 repetidas e terminar com 38 *-* #vício #álbumdacopa #vamoquevamo";
 		
-		List<String> palavrasChave = feedWS.extrairPalavrasChave(mensagemPost);
-		
-		assertEquals(11, palavrasChave.size());
-		assertEquals("comprar", palavrasChave.get(1));
-		assertFalse(palavrasChave.contains("*-*"));
-		assertFalse(palavrasChave.contains("#"));
+		String mensagemPostSemStopWords = feedWS.removerStopWords(mensagemPost);
+
+		assertEquals("sorte comprar 455 figurinhas ficar 63 repetidas terminar 38 vício álbumdacopa vamoquevamo", mensagemPostSemStopWords);
 	}
 	
 	@Test
 	public void testPrepararListaKeyWords_DeveConterFrequenciaCorreta()
 	{
 		FeedWS feedWS = new FeedWS();
-		
 		List<String> palavrasChave = new ArrayList<String>();
 		palavrasChave.add("amiga");
 		palavrasChave.add("amiga");
@@ -156,10 +117,8 @@ public class FeedWSUnitTest
 		List<KeyWord> listaKeyWords = feedWS.prepararListaKeyWords(palavrasChave);
 		
 		assertEquals(4, listaKeyWords.size());
-		
 		assertEquals("amiga", listaKeyWords.get(0).getText());
 		assertEquals(new Integer(3), listaKeyWords.get(0).getWeight());
-		
 		assertEquals("colega", listaKeyWords.get(1).getText());
 		assertEquals(new Integer(2), listaKeyWords.get(1).getWeight());
 	}
@@ -185,5 +144,22 @@ public class FeedWSUnitTest
 		String categoria = feedWS.obterCategoriaMensagem(mensagem);
 		
 		assertEquals("esportes", categoria);
+	}
+	
+	@Test
+	public void testCalcularTfIdf_DeveRetornarValorCorreto()
+	{
+		FeedWS feedWS = new FeedWS();
+		String documento1 = "this is a a sample";
+		String documento2 = "this is another another example example example";
+		List<String> colecao = new ArrayList<String>();
+		colecao.add(documento1);
+		colecao.add(documento2);
+		
+		Double tfIdfExample = feedWS.calcularTfIdf("example", documento2, colecao);
+		Double tfIdfThis = feedWS.calcularTfIdf("this", documento2, colecao);
+		
+		assertEquals(0.9030, tfIdfExample, 1);
+		assertEquals(0, tfIdfThis, 0);
 	}
 }

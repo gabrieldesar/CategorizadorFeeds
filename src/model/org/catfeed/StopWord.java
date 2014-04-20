@@ -15,50 +15,53 @@ public class StopWord
 	    
 	 static
 	 {
-	        List<String> listaStopWords = lerStopWordsArquivo("stopwords.txt");
+	        List<String> listaStopWords = lerStopWordsArquivo("stopwords_pt.txt", "stopwords_en.txt");
 	        
 	        STOPWORDS_PORTUGUES_INGLES = new CharArraySet(Version.LUCENE_47, listaStopWords, true);
 	 }
 	    
-	 private static List<String> lerStopWordsArquivo(String arquivo)
+	 private static List<String> lerStopWordsArquivo(String... arquivos)
 	 {
 		 BufferedReader bufferedReader = null;
 		 
 		 List<String> listaStopWords = new ArrayList<String>();
 	        
-		 try
-		 {
-			 String linhaAtual;
-			 
-			 bufferedReader = new BufferedReader(new FileReader(StopWord.class.getClassLoader()
-					 														  .getResource(arquivo)
-					 														  .getPath()));
-	 
-			 while ((linhaAtual = bufferedReader.readLine()) != null)
-			 {
-				 listaStopWords.add(linhaAtual.trim());
-			 }
-	 
-		 } 
-		 catch (IOException e)
-		 {
-			 e.printStackTrace();
-		 }
-		 finally
+		 for(int i = 0; i < arquivos.length; i++)
 		 {
 			 try
 			 {
-				 if (bufferedReader != null)
+				 String linhaAtual;
+				 
+				 bufferedReader = new BufferedReader(new FileReader(StopWord.class.getClassLoader()
+						 														  .getResource(arquivos[i])
+						 														  .getPath()));
+		 
+				 while ((linhaAtual = bufferedReader.readLine()) != null)
 				 {
-					 bufferedReader.close();
+					 listaStopWords.add(linhaAtual.trim());
 				 }
+		 
 			 } 
-			 catch (IOException ex)
+			 catch (IOException e)
 			 {
-				 ex.printStackTrace();
+				 e.printStackTrace();
+			 }
+			 finally
+			 {
+				 try
+				 {
+					 if (bufferedReader != null)
+					 {
+						 bufferedReader.close();
+					 }
+				 } 
+				 catch (IOException ex)
+				 {
+					 ex.printStackTrace();
+				 }
 			 }
 		 }
 		 
-		 	return listaStopWords;
-	    }
+		 return listaStopWords;
+	 }
 }
