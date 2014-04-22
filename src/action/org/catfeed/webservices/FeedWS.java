@@ -33,13 +33,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
-import com.aliasi.classify.ConfusionMatrix;
-import com.aliasi.classify.DynamicLMClassifier;
 import com.aliasi.classify.JointClassification;
-import com.aliasi.classify.JointClassifier;
-import com.aliasi.classify.JointClassifierEvaluator;
-import com.aliasi.lm.NGramProcessLM;
-import com.aliasi.util.AbstractExternalizable;
+import com.aliasi.classify.TradNaiveBayesClassifier;
+import com.aliasi.tokenizer.RegExTokenizerFactory;
+import com.aliasi.tokenizer.TokenizerFactory;
+import com.aliasi.util.CollectionUtils;
 import com.aliasi.util.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -54,22 +52,17 @@ import com.restfb.types.User;
 @Path("feed")
 public class FeedWS
 {
+	private static final String EXPRESSAO_REGULAR_SEQUENCIA_DE_CARACTERES_NAO_BRANCOS = "\\P{Z}+";
+
 	private static final double TFIDF_MINIMO_TERMO_RELEVANTE = 3.0;
 
 	private static final File DIRETORIO_CATEGORIAS = new File("src/categorias");
-
-	private static final boolean OPCAO_ARMAZENAR_CATEGORIAS = true;
-
-	private static final int CONSTANTE_NGRAM = 6;
+	
+	private static final String[] CATEGORIAS = { "esportes",
+        									     "outros" };
 
 	private static final int ID_SEM_CATEGORIA = 1;
-	
-	private static final String[] CATEGORIAS = { "cotidiano",
-                                                 "esportes",
-                                                 "politica",
-                                                 "religiao",
-                                                 "tecnologia" };
-	
+		
 	private static Logger log = Logger.getLogger(FeedWS.class.getName());
 	
 	private PostDAO postDAO = new PostDAO();
@@ -117,79 +110,52 @@ public class FeedWS
 		return new Gson().toJson(listaKeyWords);
 	}
 	
-	protected String obterCategoriaMensagem(String mensagem) throws ClassNotFoundException, IOException
-	{		
-		DynamicLMClassifier<NGramProcessLM> classifier = DynamicLMClassifier.createNGramProcess(CATEGORIAS, CONSTANTE_NGRAM);
-		
-		treinarBaseConhecimento(classifier);
-		
-        String bestCategory = classificarMensagem(mensagem, classifier);
-        
-        return bestCategory;
-	}
-
-	@SuppressWarnings("unchecked")
-	private String classificarMensagem(String mensagem,	DynamicLMClassifier<NGramProcessLM> classifier)	throws ClassNotFoundException, IOException
+	protected String obterCategoriaMensagem(String mensagem) throws IOException
 	{
-		log.debug("Compiling");
-			
-	    JointClassifier<CharSequence> compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
-	    JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIAS, OPCAO_ARMAZENAR_CATEGORIAS);
-
-    	log.info("Testing on " + CATEGORIAS[0] + "/" + mensagem + " ");
-            
-    	Classification classification = new Classification(CATEGORIAS[0]);
-    	Classified<CharSequence> classified = new Classified<CharSequence>(mensagem, classification);
-    	
-    	evaluator.handle(classified);
-    	
-    	JointClassification jc = compiledClassifier.classify(mensagem);
-    	
-        String bestCategory = jc.bestCategory();
-        String details = jc.toString();
-        
-        log.info("Got best category of: " + bestCategory);
-        log.debug(details);
-        log.info("---------------");
-	
-        ConfusionMatrix confMatrix = evaluator.confusionMatrix();
-        log.debug("Total Accuracy: " + confMatrix.totalAccuracy());
-
-        log.debug("\nFULL EVAL");
-        log.debug(evaluator);
-		return bestCategory;
-	}
-
-	private void treinarBaseConhecimento(DynamicLMClassifier<NGramProcessLM> classifier) throws IOException
-	{
-		for(int i = 0; i < CATEGORIAS.length; ++i)
+		TokenizerFactory tf	= new RegExTokenizerFactory(EXPRESSAO_REGULAR_SEQUENCIA_DE_CARACTERES_NAO_BRANCOS);
+		Set<String> setCategorias = CollectionUtils.asSet(CATEGORIAS);
+		
+		TradNaiveBayesClassifier classifier	= new TradNaiveBayesClassifier(setCategorias, tf);
+		
+		for(int i = 0; i < CATEGORIAS.length; i++)
 		{
-			File diretorioCategoriasBaseConhecimento = new File(DIRETORIO_CATEGORIAS, CATEGORIAS[i]);
-	        
-            if (!diretorioCategoriasBaseConhecimento.isDirectory())
-            {
-                throw new DiretorioInvalidoException();
-            }
-
-            String[] arquivosBaseConhecimento = diretorioCategoriasBaseConhecimento.list();
-            
-            for (int j = 0; j < arquivosBaseConhecimento.length; ++j)
-            {
-                File file = new File(diretorioCategoriasBaseConhecimento, arquivosBaseConhecimento[j]);
-                
-                String text = Files.readFromFile(file,"ISO-8859-1");
-                
-                log.debug("Training on " + CATEGORIAS[i] + "/" + arquivosBaseConhecimento[j]);
-                
-                Classification classification = new Classification(CATEGORIAS[i]);
-                
-                Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
-                
-                classifier.handle(classified);
-            }
+			File diretorioCategoria = new File(DIRETORIO_CATEGORIAS, CATEGORIAS[i]);
+			
+			if(!diretorioCategoria.isDirectory())
+			{
+				throw new DiretorioInvalidoException();
+			}
+			
+			String[] arquivosBaseConhecimento = diretorioCategoria.list();
+			
+			for(int j = 0; j < arquivosBaseConhecimento.length; j++)
+			{
+				File arquivoBaseConhecimento = new File(diretorioCategoria, arquivosBaseConhecimento[j]);
+				String texto = Files.readFromFile(arquivoBaseConhecimento, "ISO-8859-1");
+				
+				Classification classification = new Classification(CATEGORIAS[i]);
+				classifier.handle(new Classified<CharSequence>(texto, classification));
+			}
 		}
-	}
+		
+		String mensagemSemStopWords = removerStopWords(mensagem);
+		JointClassification jc = classifier.classify(mensagemSemStopWords);
 
+		log.debug("Entrada=" + mensagem);
+		for(int rank = 0; rank < jc.size(); rank++)
+		{
+			String categoria = jc.category(rank);
+			double condProb = jc.conditionalProbability(rank);
+			
+			log.debug("Rank=" + rank + 
+					  " Categoria=" + categoria 
+					  + " P(" + categoria + "|Entrada)=" + condProb);
+		}
+		log.debug("-------------------------");
+
+        return jc.category(0);
+	}
+	
 	protected String transformarJSONEmString(String json, String parametro)
 	{
 		 JsonElement je = new JsonParser().parse(json);
