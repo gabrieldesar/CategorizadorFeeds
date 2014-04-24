@@ -1,5 +1,4 @@
 var rootURL = "http://localhost:8080/CatFeed/rest/feed";
-var loginURL = "http://localhost:8080/CatFeed";
 var homeURL = "http://localhost:8080/CatFeed/pri/home.jsf";
 
 window.fbAsyncInit = function() {
@@ -10,19 +9,29 @@ window.fbAsyncInit = function() {
     xfbml      : true
   });
 
-  FB.getLoginStatus(function(response) {
+  FB.Event.subscribe('auth.authResponseChange', function(response) {
     if (response.status === 'connected') {
       persistirFeed();
+    } else if (response.status === 'not_authorized') {
+
+    	FB.login(function(response) {
+    	    if (response.authResponse) {
+    	        persistirFeed();
+    	    }
+    	}, {scope:'read_stream'});
+    	
     } else {
-    	redirecionarPaginaLogin();
+    	
+    	FB.login(function(response) {
+    	    if (response.authResponse) {
+    	        persistirFeed();
+    	    }
+    	}, {scope:'read_stream'});
+ 
     }
   });
 };
-
-function redirecionarPaginaLogin() {
-	window.location = loginURL;
-}
-
+  
 function exibirFeed() {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
       var accessTokenString = JSON.stringify({"accessToken": accessToken});

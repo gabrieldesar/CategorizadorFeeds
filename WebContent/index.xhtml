@@ -5,36 +5,36 @@
       xmlns:fb="http://ogp.me/ns/fb#" >
 	
 	<h:head>
-		<title>CatFeed</title>
+		<title>CatFeed - Login</title>
+
+		<!-- Carrega os recursos de Javascript -->
+		<script type="text/javascript" src="/CatFeed/js/jquery-1.11.0.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/facebook.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/catfeed-login.js" />
+		
+
+		<!--  Carrega os recursos de CSS  -->
+    	<link href="/CatFeed/css/bootstrap.min.css" type="text/css" rel="stylesheet" media="all" />
+    	<link href="/CatFeed/css/signin.css"		type="text/css" rel="stylesheet" media="all" />
+		<link href="/CatFeed/css/catfeed.css"		type="text/css" rel="stylesheet" media="all" />
 	</h:head>
 	
 	<h:body>
-		<!-- Carrega os recursos de Javascript -->
-		<script type="text/javascript" src="/CatFeed/js/jquery-1.11.0.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/jqcloud-1.0.4.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/catfeed.js" />
 		
-		<!--  Carrega os recursos de CSS  -->
-		<link href="/CatFeed/css/jqcloud.css" type="text/css" rel="stylesheet" media="all" />
-		<link href="/CatFeed/css/catfeed.css" type="text/css" rel="stylesheet" media="all" />
+		<div class="container">
 		
-		<div class="header">
-			<div id="fb-root" >
-				<fb:login-button show-faces='true' scope='read_stream'></fb:login-button>
+			<div class="form-signin">
+		
+				<h2 class="form-signin-heading">Logue pelo Facebook</h2>
+					
+				<div id="fb-root" >
+					<fb:login-button show-faces='true' scope='read_stream' size="xlarge" />
+				</div>
+				
 			</div>
 		
-			<button id="btnExibirFeed">Exibir Feed</button>
-			<button id="btnCloudFeed">Gerar Cloud</button>
 		</div>
-		<div class="leftArea">
-		
-			<ul id="listaPosts"></ul>
-		</div>
-		
-		<div class="mainArea">
-			<div id="wordCloud" />
-		</div>
-		
+
 	</h:body>
 	
 </html>
