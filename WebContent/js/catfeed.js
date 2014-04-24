@@ -1,6 +1,5 @@
 var rootURL = "http://localhost:8080/CatFeed/rest/feed";
 var loginURL = "http://localhost:8080/CatFeed";
-var homeURL = "http://localhost:8080/CatFeed/pri/home.jsf";
 
 window.fbAsyncInit = function() {
   FB.init({
@@ -12,7 +11,6 @@ window.fbAsyncInit = function() {
 
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
-      persistirFeed();
     } else {
     	redirecionarPaginaLogin();
     }
@@ -40,31 +38,6 @@ function exibirFeed() {
               renderizarPostsFeed(data);
           }
       });
-}
-
-function persistirFeed() {
-	console.log('Conectado, persistindo o feed no banco...');
-
-	var accessToken = FB.getAuthResponse()['accessToken'];
-	var accessTokenString = JSON.stringify({"accessToken": accessToken});
-    
-    jQuery.ajax({
-        type: "POST",
-        url: rootURL + '/salvarFeed',
-        data: accessTokenString,
-        contentType: "application/json",
-        error: function (xhr, status) {
-                console.log("Ocorreu um erro ao persistir o feed: " + status + '.');
-            },
-        success: function (msg) {
-            console.log("Feed salvo com sucesso.");
-            redirecionarPaginaPrincipal();
-        }
-    });
-}
-
-function redirecionarPaginaPrincipal() {
-	window.location = homeURL;
 }
 
 function recuperarMapaFrequenciasPalavraChave() {
