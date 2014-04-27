@@ -1,5 +1,6 @@
 package org.catfeed.webservices;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +13,10 @@ import javax.ws.rs.core.MediaType;
 import org.catfeed.CategorizadorActionBean;
 import org.catfeed.Keyword;
 import org.catfeed.dao.PostDAO;
+import org.catfeed.utils.FeedUtils;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -52,7 +52,7 @@ public class FeedWS
 	@Produces({ MediaType.APPLICATION_JSON})
     public void salvarFeed(@JsonProperty("accessToken") String accessToken)
 	{
-		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		 String stringAccessToken = FeedUtils.transformarJSONEmString(accessToken, "accessToken");
 		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
 		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
@@ -62,10 +62,10 @@ public class FeedWS
     }
 	
 	@POST
-	@Path("mapaFrequencias")
+	@Path("listaKeywords")
 	@Consumes({ MediaType.APPLICATION_JSON})
 	@Produces({ MediaType.APPLICATION_JSON})
-	public String obterMapaFrequencias(@JsonProperty("accessToken") String accessToken)
+	public String obterListaKeywords(@JsonProperty("accessToken") String accessToken)
 	{
 		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
 		List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
@@ -74,22 +74,23 @@ public class FeedWS
 		return new Gson().toJson(listaKeywords);
 	}
 	
-	protected String formatarNomeUsuarioLogado(User usuarioLogado)
+	@POST
+	@Path("arrayCategoriasNumeroPosts")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+	public String obterArrayCategoriasNumeroPosts(@JsonProperty("accessToken") String accessToken) throws IOException
 	{
-		return usuarioLogado.getFirstName() + ' ' + usuarioLogado.getLastName();
+		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
+		List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
+	
+		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = categorizadorActionBean.obterArrayCategoriasNumeroPosts(listaMensagensPosts);
+		
+		return new Gson().toJson(arrayCategoriasNumeroPosts);
 	}
 	
-	protected String transformarJSONEmString(String json, String parametro)
-	{
-		 JsonElement je = new JsonParser().parse(json);
-		 String string = je.getAsJsonObject().get(parametro).getAsString();
-		 
-		 return string;
-	}
-		
 	private String obterNomeUsuarioLogado(String accessToken)
 	{
-		String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
+		String stringAccessToken = FeedUtils.transformarJSONEmString(accessToken, "accessToken");
 		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
 		User usuarioLogado = facebookClient.fetchObject("me", User.class);
@@ -100,7 +101,7 @@ public class FeedWS
 	
 	private void persistirPostsSemCategoria(Connection<Post> newsFeed, User usuarioLogado)
 	{
-		String nomeUsuarioLogado = formatarNomeUsuarioLogado(usuarioLogado);
+		String nomeUsuarioLogado = FeedUtils.formatarNomeUsuarioLogado(usuarioLogado);
 		
 		for(Post post : newsFeed.getData())
 		{

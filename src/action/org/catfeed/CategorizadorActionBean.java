@@ -24,10 +24,12 @@ import org.catfeed.exceptions.DiretorioInvalidoException;
 
 import com.aliasi.classify.Classification;
 import com.aliasi.classify.Classified;
-import com.aliasi.classify.JointClassification;
+import com.aliasi.classify.ConditionalClassification;
+import com.aliasi.classify.ConditionalClassifier;
 import com.aliasi.classify.TradNaiveBayesClassifier;
 import com.aliasi.tokenizer.RegExTokenizerFactory;
 import com.aliasi.tokenizer.TokenizerFactory;
+import com.aliasi.util.AbstractExternalizable;
 import com.aliasi.util.CollectionUtils;
 import com.aliasi.util.Files;
 import com.google.gson.JsonElement;
@@ -35,6 +37,8 @@ import com.google.gson.JsonParser;
 
 public class CategorizadorActionBean
 {
+	private static final File ARQUIVO_CLASSIFIER_TREINADO = new File(CategorizadorActionBean.class.getClassLoader().getResource("classifierTreinado").getPath());
+	
 	private static final String EXPRESSAO_REGULAR_SEQUENCIA_DE_CARACTERES_NAO_BRANCOS = "\\P{Z}+";
 
 	private static final String[] CATEGORIAS =	{ "esportes", "outros" };
@@ -54,7 +58,7 @@ public class CategorizadorActionBean
 		return listaKeyWords;
 	}
 	
-	protected String obterCategoriaMensagem(String mensagem) throws IOException
+	protected void treinarBaseDeConhecimento()
 	{
 		TokenizerFactory tf	= new RegExTokenizerFactory(EXPRESSAO_REGULAR_SEQUENCIA_DE_CARACTERES_NAO_BRANCOS);
 		Set<String> setCategorias = CollectionUtils.asSet(CATEGORIAS);
@@ -64,7 +68,7 @@ public class CategorizadorActionBean
 		for(int i = 0; i < CATEGORIAS.length; i++)
 		{
 			File diretorioCategoria = new File(DIRETORIO_CATEGORIAS, CATEGORIAS[i]);
-				
+			
 			if(!diretorioCategoria.isDirectory())
 			{
 				throw new DiretorioInvalidoException();
@@ -75,29 +79,61 @@ public class CategorizadorActionBean
 			for(int j = 0; j < arquivosBaseConhecimento.length; j++)
 			{
 				File arquivoBaseConhecimento = new File(diretorioCategoria, arquivosBaseConhecimento[j]);
-				String texto = Files.readFromFile(arquivoBaseConhecimento, "ISO-8859-1");
-				
-				Classification classification = new Classification(CATEGORIAS[i]);
-				classifier.handle(new Classified<CharSequence>(texto, classification));
+				String texto;
+				try
+				{
+					texto = Files.readFromFile(arquivoBaseConhecimento, "ISO-8859-1");
+					Classification classification = new Classification(CATEGORIAS[i]);
+					classifier.handle(new Classified<CharSequence>(texto, classification));
+				} 
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 		
-		String mensagemSemStopWords = removerStopWords(mensagem);
-		JointClassification jc = classifier.classify(mensagemSemStopWords);
-
-		log.debug("Entrada=" + mensagem);
-		for(int rank = 0; rank < jc.size(); rank++)
+		try
 		{
-			String categoria = jc.category(rank);
-			double condProb = jc.conditionalProbability(rank);
-			
-			log.debug("Rank=" + rank + 
-					  " Categoria=" + categoria 
-					  + " P(" + categoria + "|Entrada)=" + condProb);
+			File arquivoClassifierTreinado = ARQUIVO_CLASSIFIER_TREINADO;
+			AbstractExternalizable.compileTo(classifier, arquivoClassifierTreinado);
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
-		log.debug("-------------------------");
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected String obterCategoriaMensagem(String mensagem)
+	{
+		try 
+		{			
+			ConditionalClassifier<CharSequence> classifier = (ConditionalClassifier<CharSequence>) AbstractExternalizable.readObject(ARQUIVO_CLASSIFIER_TREINADO);
+			
+			String mensagemSemStopWords = removerStopWords(mensagem);
+			ConditionalClassification cc = classifier.classify(mensagemSemStopWords);
 
-        return jc.category(0);
+			log.debug("Entrada=" + mensagem);
+			for(int rank = 0; rank < cc.size(); rank++)
+			{
+				String categoria = cc.category(rank);
+				double condProb = cc.conditionalProbability(rank);
+				
+				log.debug("Rank=" + rank + 
+						  " Categoria=" + categoria 
+						  + " P(" + categoria + "|Entrada)=" + condProb);
+			}
+			log.debug("-------------------------");
+
+			return cc.category(0);
+		} 
+		catch (ClassNotFoundException | IOException e)
+		{
+			e.printStackTrace();
+		};
+		
+		return "erro";
 	}
 		
 	protected List<Keyword> prepararListaKeywords(List<String> listaMensagensTermosRelevantes)
@@ -282,5 +318,38 @@ public class CategorizadorActionBean
 		 }
 
 		 return listaMensagensSemStopWords;
+	}
+	
+	public ArrayList<ArrayList<Object>> obterArrayCategoriasNumeroPosts(List<String> listaMensagensPosts) throws IOException
+	{
+		Map<String, Integer> mapaCategoriasNumeroPosts = obterMapaCategoriasNumeroPosts(listaMensagensPosts);
+		
+		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = new ArrayList<ArrayList<Object>>();
+
+		for(String chave : mapaCategoriasNumeroPosts.keySet())
+		{
+			ArrayList<Object> categoriaNumeroPost = new ArrayList<Object>();
+			categoriaNumeroPost.add(chave);
+			categoriaNumeroPost.add(mapaCategoriasNumeroPosts.get(chave));
+			arrayCategoriasNumeroPosts.add(categoriaNumeroPost);
+		}
+		
+		return arrayCategoriasNumeroPosts;
+	} 
+
+	protected Map<String, Integer> obterMapaCategoriasNumeroPosts(List<String> listaMensagensPosts) throws IOException
+	{
+		Map<String, Integer> mapaCategoriasNumeroPosts = new HashMap<String, Integer>();
+		
+		for(String mensagem : listaMensagensPosts)
+		{
+			 String mensagemSemStopWords = removerStopWords(mensagem);
+			 String categoria = obterCategoriaMensagem(mensagemSemStopWords);
+			 
+			 Integer numeroPosts = mapaCategoriasNumeroPosts.get(categoria);
+			 mapaCategoriasNumeroPosts.put(categoria, (numeroPosts == null) ? 1 : numeroPosts + 1);
+		}
+		
+		return mapaCategoriasNumeroPosts;
 	}
 }

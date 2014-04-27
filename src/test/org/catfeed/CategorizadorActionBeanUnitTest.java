@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -114,6 +116,54 @@ public class CategorizadorActionBeanUnitTest
 	}
 	
 	@Test
+	public void testObterMapaCategoriasNumeroPosts_DeveRetornarMapaCorreto() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		
+		String mensagemPost1 =	"FANATISMO NA PELE! " +
+								"Torcedor faz tatuagem para homenagear PROVOCAÇÃO de Felipe Melo a rival. Veja: http://glo.bo/1hFZQI2";
+		
+		String mensagemPost2 =  "Lembra desse jogador aí da foto? Ele foi o maior pontuador do CartolaFC em 2013 e quer repetir a dose este ano. Já montou o seu time? O mercado fecha neste sábado, às 16h30. Corre lá! http://glo.bo/1r4SxdQ";
+		
+		String mensagemPost3 =  "Quando que um jornal nacional faria uma matéria assim? " + 
+								"A favela cansou de enterrar seus mortos calada.";
+
+		String[] arrayMensagensPost = { mensagemPost1, mensagemPost2, mensagemPost3 };
+		
+		List<String> listaMensagensPosts = new ArrayList<String>(Arrays.asList(arrayMensagensPost));
+		
+		Map<String, Integer> mapaCategoriasNumeroPosts = categorizadorActionBean.obterMapaCategoriasNumeroPosts(listaMensagensPosts);
+		
+		assertEquals(new Integer(2), mapaCategoriasNumeroPosts.get("esportes"));
+		assertEquals(new Integer(1), mapaCategoriasNumeroPosts.get("outros"));
+	}
+	
+	@Test
+	public void testObterArrayCategoriasNumeroPosts() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		
+		String mensagemPost1 =	"FANATISMO NA PELE! " +
+								"Torcedor faz tatuagem para homenagear PROVOCAÇÃO de Felipe Melo a rival. Veja: http://glo.bo/1hFZQI2";
+		
+		String mensagemPost2 =  "Lembra desse jogador aí da foto? Ele foi o maior pontuador do CartolaFC em 2013 e quer repetir a dose este ano. Já montou o seu time? O mercado fecha neste sábado, às 16h30. Corre lá! http://glo.bo/1r4SxdQ";
+		
+		String mensagemPost3 =  "Quando que um jornal nacional faria uma matéria assim? " + 
+								"A favela cansou de enterrar seus mortos calada.";
+
+		String[] arrayMensagensPost = { mensagemPost1, mensagemPost2, mensagemPost3 };
+		
+		List<String> listaMensagensPosts = new ArrayList<String>(Arrays.asList(arrayMensagensPost));
+
+		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = categorizadorActionBean.obterArrayCategoriasNumeroPosts(listaMensagensPosts);
+		
+		assertEquals("outros", arrayCategoriasNumeroPosts.get(0).get(0));
+		assertEquals(new Integer(1), arrayCategoriasNumeroPosts.get(0).get(1));
+		assertEquals("esportes", arrayCategoriasNumeroPosts.get(1).get(0));
+		assertEquals(new Integer(2), arrayCategoriasNumeroPosts.get(1).get(1));
+	}
+	
+	@Test
 	public void testCalcularTfIdf_DeveRetornarValorCorreto()
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
@@ -128,6 +178,14 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals(0.9030, tfIdfExample, 1);
 		assertEquals(0, tfIdfThis, 0);
+	}
+	
+	@Test
+	public void testTreinarBaseDeConhecimento()
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		
+		categorizadorActionBean.treinarBaseDeConhecimento();
 	}
 	
 	@Test
