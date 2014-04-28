@@ -55,7 +55,7 @@ public class FeedWS
 		 String stringAccessToken = transformarJSONEmString(accessToken, "accessToken");
 		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
-		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "150"));
+		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("since", "today"), Parameter.with("limit", "100"));
 		 User usuarioLogado = facebookClient.fetchObject("me", User.class);
 		 
 		 persistirPostsSemCategoria(newsFeed, usuarioLogado);

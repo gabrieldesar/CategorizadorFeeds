@@ -189,4 +189,15 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("outros", categoria);
 	}
+
+	@Test
+	public void testObterCategoriaMensagem_PostSobreEsportes_DeveRetornarCategoriaCorreta3() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"Vem Copa do Mundo !!! #worldcup #final #brasil #rumoaohexa #roadtomaracanã @tondauar";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("esportes", categoria);
+	}
 }
