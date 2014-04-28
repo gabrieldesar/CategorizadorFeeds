@@ -11,6 +11,8 @@ window.fbAsyncInit = function() {
 
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
+    	recuperarListaKeywords();
+    	recuperarArrayCategoriasNumeroPosts();
     } else {
     	redirecionarPaginaLogin();
     }
@@ -40,24 +42,44 @@ function exibirFeed() {
       });
 }
 
-function recuperarMapaFrequenciasPalavraChave() {
+function recuperarListaKeywords() {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
       var accessTokenString = JSON.stringify({"accessToken": accessToken});
 
       jQuery.ajax({
           type: "POST",
-          url: rootURL + '/mapaFrequencias',
+          url: rootURL + '/listaKeywords',
           data: accessTokenString,
           contentType: "application/json",
           dataType: "json",
           error: function (xhr, status) {
-                  console.log("Ocorreu um erro ao recuperar o mapa de frequências das palavras chave: " + status + '.');
+                  console.log("Ocorreu um erro ao recuperar a lista de Keywords: " + status + '.');
               },
           success: function (data, msg) {
-              console.log("Mapa de frequências recuperado com sucesso.");
+              console.log("Lista de Keywords recuperado com sucesso.");
               renderizarCloudFeed(data);
           }
       });
+}
+
+function recuperarArrayCategoriasNumeroPosts() {
+	var accessToken = FB.getAuthResponse()['accessToken'];
+    var accessTokenString = JSON.stringify({"accessToken": accessToken});
+
+    jQuery.ajax({
+        type: "POST",
+        url: rootURL + '/arrayCategoriasNumeroPosts',
+        data: accessTokenString,
+        contentType: "application/json",
+        dataType: "json",
+        error: function (xhr, status) {
+                console.log("Ocorreu um erro ao recuperar o array de categorias e número de posts: " + status + '.');
+            },
+        success: function (data, msg) {
+            console.log("Array de categorias e número de posts recuperado com sucesso.");
+            renderizarFeedChart(data);
+        }
+    });
 }
   
 function renderizarPostsFeed(data) {
@@ -76,18 +98,21 @@ function renderizarCloudFeed(data) {
 
 	jQuery("#wordCloud").jQCloud(listaPalavrasChave);
 }
+
+function renderizarFeedChart(data) {	
+	
+	var listaPalavrasChave = data == null ? [] : [data];
+
+	jQuery.jqplot ('feedChart', listaPalavrasChave, 
+		    { 
+		      seriesDefaults: {
+		        renderer: jQuery.jqplot.PieRenderer, 
+		        rendererOptions: {
+		          showDataLabels: true
+		        }
+		      }, 
+		      legend: { show:true, location: 'e' }
+		    }
+		  );
+}
   
-jQuery(document).ready(function() {
-
-	jQuery('#btnExibirFeed').click(function() {
-		console.log('Exibindo o feed...');
-		exibirFeed();
-		return false;
-	});
-
-	jQuery('#btnCloudFeed').click(function() {
-		console.log('Gerando cloud do feed...');
-		recuperarMapaFrequenciasPalavraChave();
-		return false;
-	});
-});
