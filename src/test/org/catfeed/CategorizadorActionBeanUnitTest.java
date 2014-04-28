@@ -12,6 +12,7 @@ import org.junit.Test;
 
 public class CategorizadorActionBeanUnitTest
 {
+	
 	@Test
 	public void testRemoverStopWords_DeveRemoverStopWords()
 	{
@@ -163,6 +164,7 @@ public class CategorizadorActionBeanUnitTest
 		assertEquals(new Integer(2), arrayCategoriasNumeroPosts.get(1).get(1));
 	}
 	
+	
 	@Test
 	public void testCalcularTfIdf_DeveRetornarValorCorreto()
 	{
@@ -257,5 +259,26 @@ public class CategorizadorActionBeanUnitTest
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
 		assertEquals("esportes", categoria);
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_PostSobreAniversario_DeveRetornarCategoriaCorreta3() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"Parabéns !!!!! Muita saúde !! Bjss";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("aniversario", categoria);
+	}
+	@Test
+	public void testObterCategoriaMensagem_PostSobreAniversario2_DeveRetornarCategoriaCorreta3() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"Parabéns muita paz,  e tudo de bom!!";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("aniversario", categoria);
 	}
 }
