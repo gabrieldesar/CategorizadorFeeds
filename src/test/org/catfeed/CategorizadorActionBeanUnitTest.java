@@ -12,7 +12,7 @@ import org.junit.Test;
 
 public class CategorizadorActionBeanUnitTest
 {
-	/*
+
 	@Test
 	public void testRemoverStopWords_DeveRemoverStopWords()
 	{
@@ -163,7 +163,6 @@ public class CategorizadorActionBeanUnitTest
 		assertEquals("esportes", arrayCategoriasNumeroPosts.get(1).get(0));
 		assertEquals(new Integer(2), arrayCategoriasNumeroPosts.get(1).get(1));
 	}
-	*/
 	
 	@Test
 	public void testCalcularTfIdf_DeveRetornarValorCorreto()
@@ -271,6 +270,7 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("transito", categoria);
 	}
+
 	@Test
 	public void testObterCategoriaMensagem_PostSobreTransito2_DeveRetornarCategoriaCorreta3() throws IOException
 	{
@@ -281,6 +281,7 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("transito", categoria);
 	}
+	
 	@Test
 	public void testObterCategoriaMensagem_PostSobreTransito3_DeveRetornarCategoriaCorreta3() throws IOException
 	{
@@ -293,5 +294,4 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("transito", categoria);
 	}
-
 }
