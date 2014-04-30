@@ -182,14 +182,6 @@ public class CategorizadorActionBeanUnitTest
 	}
 	
 	@Test
-	public void testTreinarBaseDeConhecimento()
-	{
-		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
-		
-		categorizadorActionBean.treinarBaseDeConhecimento();
-	}
-	
-	@Test
 	public void testObterCategoriaMensagem_PostSobreEsporte_DeveRetornarCategoriaCorreta() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
@@ -261,10 +253,12 @@ public class CategorizadorActionBeanUnitTest
 	}
 	
 	@Test
-	public void testObterCategoriaMensagem_PostSobreTransito_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito_DeveRetornarCategoriaCorreta() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
 		String mensagemPost =   "Trânsito na Taquara muda a partir deste domingo.";
+		
+		System.out.println(categorizadorActionBean.removerStopWords(mensagemPost));
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
@@ -272,7 +266,7 @@ public class CategorizadorActionBeanUnitTest
 	}
 
 	@Test
-	public void testObterCategoriaMensagem_PostSobreTransito2_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito_DeveRetornarCategoriaCorreta2() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
 		String mensagemPost =   "CAMPO GRANDE (16h43) - Removidos carro e carreta que colidiram no Vd Engenheiro Oscar Brito, Campo Grande, sentido Guaratiba. Siga e pare desfeito. O trânsito é intenso.";
@@ -283,7 +277,7 @@ public class CategorizadorActionBeanUnitTest
 	}
 	
 	@Test
-	public void testObterCategoriaMensagem_PostSobreTransito3_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito_DeveRetornarCategoriaCorreta3() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
 		String mensagemPost =   "LINHAS MUNICIPAIS | CENTRO DO RIO - Confira os detalhes dos novos itinerários e pontos finais das linhas municipais que " +
@@ -294,4 +288,5 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("transito", categoria);
 	}
+	
 }

@@ -82,7 +82,6 @@ public class FeedWS
 	{
 		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
 		List<String> listaMensagensPosts = obterListaMensagensPosts(nomeUsuarioLogado);
-	
 		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = categorizadorActionBean.obterArrayCategoriasNumeroPosts(listaMensagensPosts);
 		
 		return new Gson().toJson(arrayCategoriasNumeroPosts);
