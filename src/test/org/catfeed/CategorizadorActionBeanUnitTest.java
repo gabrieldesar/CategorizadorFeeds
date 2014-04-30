@@ -222,7 +222,7 @@ public class CategorizadorActionBeanUnitTest
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
-		assertEquals("noticias", categoria);
+		assertEquals("outros", categoria);
 	}
 	
 	@Test
@@ -262,33 +262,36 @@ public class CategorizadorActionBeanUnitTest
 	}
 	
 	@Test
-	public void testObterCategoriaMensagem_PostSobreAniversario_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito_DeveRetornarCategoriaCorreta3() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
-		String mensagemPost =	"Parabéns !!!!! Muita saúde !! Bjss";
+		String mensagemPost =   "Trânsito na Taquara muda a partir deste domingo.";
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
-		assertEquals("aniversario", categoria);
+		assertEquals("transito", categoria);
 	}
 	@Test
-	public void testObterCategoriaMensagem_PostSobreAniversario2_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito2_DeveRetornarCategoriaCorreta3() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
-		String mensagemPost =	"Parabéns muita paz,  e tudo de bom!!";
+		String mensagemPost =   "CAMPO GRANDE (16h43) - Removidos carro e carreta que colidiram no Vd Engenheiro Oscar Brito, Campo Grande, sentido Guaratiba. Siga e pare desfeito. O trânsito é intenso.";
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
-		assertEquals("aniversario", categoria);
+		assertEquals("transito", categoria);
 	}
 	@Test
-	public void testObterCategoriaMensagem_PostSobreNoticia_DeveRetornarCategoriaCorreta3() throws IOException
+	public void testObterCategoriaMensagem_PostSobreTransito3_DeveRetornarCategoriaCorreta3() throws IOException
 	{
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
-		String mensagemPost =   "Trânsito na Taquara muda a partir deste domingo. Confira:";
+		String mensagemPost =   "LINHAS MUNICIPAIS | CENTRO DO RIO - Confira os detalhes dos novos itinerários e pontos finais das linhas municipais que " +
+								"passam pelo Centro, após as alterações de tráfego para o fechamento do Mergulhão da Praça XV e implantação de mão dupla na Avenida Rio Branco";
+
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
-		assertEquals("noticias", categoria);
+		assertEquals("transito", categoria);
 	}
+
 }

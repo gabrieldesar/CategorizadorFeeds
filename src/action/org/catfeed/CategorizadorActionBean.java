@@ -41,7 +41,7 @@ public class CategorizadorActionBean
 	
 	private static final String EXPRESSAO_REGULAR_SEQUENCIA_DE_CARACTERES_NAO_BRANCOS = "\\P{Z}+";
 
-	private static final String[] CATEGORIAS =	{ "esportes", "outros", "politica" };
+	private static final String[] CATEGORIAS =	{ "esportes", "outros", "politica", "transito" };
 	
 	private static final double TFIDF_MINIMO_TERMO_RELEVANTE = 3.5;
 
