@@ -4,7 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html" >
 	
 	<h:head>
-		<title>Perfil</title>
+		<title>Outros</title>
 
 		<!-- Carrega os recursos de Javascript -->
 		<script type="text/javascript" src="/CatFeed/js/jquery-1.11.0.min.js" />
@@ -14,14 +14,12 @@
 		<script type="text/javascript" src="/CatFeed/js/jqplot.donutRenderer.min.js" />
 		<script type="text/javascript" src="/CatFeed/js/jqplot.pieRenderer.min.js" />
 		<script type="text/javascript" src="/CatFeed/js/spin.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/perfil.js" />
 		
 		<!--  Carrega os recursos de CSS  -->
     	<link href="/CatFeed/css/bootstrap.min.css" 		type="text/css" rel="stylesheet" media="all" />
     	<link href="/CatFeed/css/dashboard.css"				type="text/css" rel="stylesheet" media="all" />
     	<link href="/CatFeed/css/jqcloud.css"				type="text/css" rel="stylesheet" media="all" />
     	<link href="/CatFeed/css/jquery.jqplot.min.css"		type="text/css" rel="stylesheet" media="all" />
-    	<link href="/CatFeed/css/perfil.css"				type="text/css" rel="stylesheet" media="all" />
 	</h:head>
 	
 	<h:body>
@@ -49,34 +47,16 @@
 			<div class="row">
 	        	<div class="col-sm-3 col-md-2 sidebar">
 		          <ul class="nav nav-sidebar">
-		            <li class="active"><a href="#">Meu perfil</a></li>
+					<li><a href="http://localhost:8080/CatFeed/pri/perfil.jsf">Meu perfil</a></li>
 		            <li><a href="http://localhost:8080/CatFeed/pri/esportes.jsf">Esportes</a></li>
 		          	<li><a href="http://localhost:8080/CatFeed/pri/politica.jsf">Política</a></li>
 		            <li><a href="http://localhost:8080/CatFeed/pri/transito.jsf">Trânsito</a></li>
-		            <li><a href="http://localhost:8080/CatFeed/pri/outros.jsf">Outros</a></li>
+		            <li class="active"><a href="#">Outros</a></li>
 		          </ul>
         		</div>
         	</div>
         </div>
         
-        <div class="row">
-	        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-	        	<h2 class="page-header">Tag Cloud</h2>
-	        
-		        <div class="row placeholders">
-		        	<div id="wordCloud" />
-		        </div>
-		    </div>
-		    
-		    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-		    	<h2 class="sub-header">Feed Chart</h2>
-		    	
-		    	<div class="row placeholders">
-		        	<div id="feedChart" />
-		        </div>
-		    </div>
-		</div>
-
 	</h:body>
 	
 </html>
