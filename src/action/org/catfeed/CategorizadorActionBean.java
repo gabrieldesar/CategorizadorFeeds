@@ -295,8 +295,7 @@ public class CategorizadorActionBean
 	
 	public ArrayList<ArrayList<Object>> obterArrayCategoriasNumeroPosts(List<String> listaMensagensPosts) throws IOException
 	{
-		List<String> listaMensagensSemStopWords = obterListaMensagensSemStopWords(listaMensagensPosts);
-		Map<String, Integer> mapaCategoriasNumeroPosts = obterMapaCategoriasNumeroPosts(listaMensagensSemStopWords);
+		Map<String, Integer> mapaCategoriasNumeroPosts = obterMapaCategoriasNumeroPosts(listaMensagensPosts);
 		
 		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = new ArrayList<ArrayList<Object>>();
 

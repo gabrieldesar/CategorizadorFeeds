@@ -283,6 +283,7 @@ public class CategorizadorActionBeanUnitTest
 		String mensagemPost =   "LINHAS MUNICIPAIS | CENTRO DO RIO - Confira os detalhes dos novos itinerários e pontos finais das linhas municipais que " +
 								"passam pelo Centro, após as alterações de tráfego para o fechamento do Mergulhão da Praça XV e implantação de mão dupla na Avenida Rio Branco";
 
+		System.out.println(categorizadorActionBean.removerStopWords(mensagemPost));
 		
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
