@@ -12,7 +12,6 @@ import org.junit.Test;
 
 public class CategorizadorActionBeanUnitTest
 {
-
 	@Test
 	public void testRemoverStopWords_DeveRemoverStopWords()
 	{
@@ -290,4 +289,11 @@ public class CategorizadorActionBeanUnitTest
 		assertEquals("transito", categoria);
 	}
 	
+	@Test
+	public void testTreinarBaseDeConhecimento()
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+	         
+	    categorizadorActionBean.treinarBaseDeConhecimento();
+	}
 }

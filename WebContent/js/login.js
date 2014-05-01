@@ -1,25 +1,6 @@
 var rootURL = "http://localhost:8080/CatFeed/rest/feed";
-var homeURL = "http://localhost:8080/CatFeed/pri/home.jsf";
+var perfilURL = "http://localhost:8080/CatFeed/pri/perfil.jsf";
 
-window.fbAsyncInit = function() {
-  FB.init({
-    appId      : '207499559461358',
-    status     : true,
-    cookie     : true,
-    xfbml      : true
-  });
-
-  FB.getLoginStatus(function(response) {
-	  if (response.status === 'connected') {
-		  redirecionarPaginaPrincipal();
-    } 
-  });
-  
-  FB.Event.subscribe('auth.login', function () {
-	  persistirFeed();
-  });
-};
-  
 function persistirFeed() {
 	console.log('Conectado, persistindo o feed no banco...');
 	
@@ -27,7 +8,7 @@ function persistirFeed() {
 
 	var accessToken = FB.getAuthResponse()['accessToken'];
 	var accessTokenString = JSON.stringify({"accessToken": accessToken});
-    
+
     jQuery.ajax({
         type: "POST",
         url: rootURL + '/salvarFeed',
@@ -44,5 +25,26 @@ function persistirFeed() {
 }
 
 function redirecionarPaginaPrincipal() {
-	window.location = homeURL;
+	jQuery("#mensagem").text("Redirecionando...");
+	window.location.href = perfilURL;
 }
+
+jQuery(window).load(function() {
+	
+		  FB.init({
+		    appId      : '207499559461358',
+		    status     : true,
+		    cookie     : true,
+		    xfbml      : true
+		  });
+	
+		  FB.getLoginStatus(function(response) {
+			  if (response.status === 'connected') {
+				  redirecionarPaginaPrincipal();
+		    } 
+		  });
+		  
+		  FB.Event.subscribe('auth.login', function () {
+			  persistirFeed();
+		  });
+});
