@@ -36,7 +36,9 @@ import com.google.gson.JsonParser;
 
 public class CategorizadorActionBean
 {
-	private static final File ARQUIVO_CLASSIFIER_TREINADO = new File(CategorizadorActionBean.class.getClassLoader().getResource("classifierTreinado").getPath());
+	private static final File ARQUIVO_CLASSIFIER_NAO_COMPILADO = new File(System.getProperty("user.dir") + "/src/classifierTreinado");
+	
+	private static final File ARQUIVO_CLASSIFIER_COMPILADO = new File(CategorizadorActionBean.class.getClassLoader().getResource("classifierTreinado").getPath());
 
 	private static final File DIRETORIO_CATEGORIAS = new File("src/categorias");
 	
@@ -94,7 +96,7 @@ public class CategorizadorActionBean
              
              try
              {
-                     AbstractExternalizable.compileTo(classifier, ARQUIVO_CLASSIFIER_TREINADO);
+                     AbstractExternalizable.compileTo(classifier, ARQUIVO_CLASSIFIER_NAO_COMPILADO);
              } 
              catch (IOException e)
              {
@@ -107,7 +109,7 @@ public class CategorizadorActionBean
      {
              try 
              {                       
-                     ConditionalClassifier<CharSequence> classifier = (ConditionalClassifier<CharSequence>) AbstractExternalizable.readObject(ARQUIVO_CLASSIFIER_TREINADO);
+                     ConditionalClassifier<CharSequence> classifier = (ConditionalClassifier<CharSequence>) AbstractExternalizable.readObject(ARQUIVO_CLASSIFIER_COMPILADO);
                      
                      String mensagemSemStopWords = removerStopWords(mensagem);
                      ConditionalClassification cc = classifier.classify(mensagemSemStopWords);
