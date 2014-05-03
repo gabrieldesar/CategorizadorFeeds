@@ -4,22 +4,19 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html" >
 	
 	<h:head>
-		<title>Outros</title>
+		<title>CatFeed - Política</title>
 
 		<!-- Carrega os recursos de Javascript -->
-		<script type="text/javascript" src="/CatFeed/js/jquery-1.11.0.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/facebook.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/jqcloud-1.0.4.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/jquery.jqplot.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/jqplot.donutRenderer.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/jqplot.pieRenderer.min.js" />
-		<script type="text/javascript" src="/CatFeed/js/spin.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/plugins/jquery-1.11.0.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/plugins/facebook.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/plugins/jqcloud-1.0.4.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/plugins/spin.min.js" />
+		<script type="text/javascript" src="/CatFeed/js/politica.js" />
 		
 		<!--  Carrega os recursos de CSS  -->
     	<link href="/CatFeed/css/bootstrap.min.css" 		type="text/css" rel="stylesheet" media="all" />
+    	<link href="/CatFeed/css/blog.css"					type="text/css" rel="stylesheet" media="all" />
     	<link href="/CatFeed/css/dashboard.css"				type="text/css" rel="stylesheet" media="all" />
-    	<link href="/CatFeed/css/jqcloud.css"				type="text/css" rel="stylesheet" media="all" />
-    	<link href="/CatFeed/css/jquery.jqplot.min.css"		type="text/css" rel="stylesheet" media="all" />
 	</h:head>
 	
 	<h:body>
@@ -55,6 +52,29 @@
 		          </ul>
         		</div>
         	</div>
+        </div>
+        
+        <div class="row">
+        	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        		<h2 class="page-header">Política</h2>
+	        	<div id="posts" />
+	        	
+	        	<div class="row">
+	        		<div class="col-md-3 col-md-offset-4 placeholders" />
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-md-3 col-md-offset-4 placeholders" />
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-md-3 col-md-offset-4 placeholders" />
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-md-3 col-md-offset-4 placeholders" />
+	        	</div>
+	        	<div class="row">
+	        		<div id="spinnerDiv" class="col-md-3 col-md-offset-4" />
+       			</div>
+       		</div>
         </div>
         
 	</h:body>

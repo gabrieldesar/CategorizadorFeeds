@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PostDAO
 {
-	public void salvar(com.restfb.types.Post post, String nomeUsuario, int categoria)
+	public void salvar(com.restfb.types.Post post, String nomeUsuario)
 	{
 		Connection c = null;
         PreparedStatement ps = null;
@@ -23,8 +23,8 @@ public class PostDAO
             ps = c.prepareStatement("INSERT INTO Post VALUES (default, ?, ?, ?, ?, ?)");
             ps.setDate(1, formatarHoraAtual());
             ps.setString(2, post.getMessage());
-            ps.setInt(3, categoria);
-            ps.setString(4, nomeUsuario);
+            ps.setString(3, nomeUsuario);
+            ps.setString(4, post.getFrom().getName());
             ps.setString(5, gerarHashMD5(post.getMessage()));
             ps.executeUpdate();
         } 
@@ -68,62 +68,6 @@ public class PostDAO
         return listaPosts;
 	}
 	
-	public List<org.catfeed.Post> recuperarPostsSemCategoria()
-	{
-		List<org.catfeed.Post> listaPosts = new ArrayList<org.catfeed.Post>();
-        Connection c = null;
-    	String sql = "SELECT * FROM Post WHERE IdCategoria = 1";
-        try
-        {
-            c = ConnectionHelper.getConnection();
-            PreparedStatement ps = c.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next())
-            {
-                listaPosts.add(processarResultado(rs));
-            }
-        } 
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-		} 
-        finally
-        {
-			ConnectionHelper.close(c);
-		}
-        
-        return listaPosts;
-	}
-	
-	public List<org.catfeed.Post> recuperarPostsComCategoria()
-	{
-		List<org.catfeed.Post> listaPosts = new ArrayList<org.catfeed.Post>();
-        Connection c = null;
-    	String sql = "SELECT * FROM Post p" +
-			         "WHERE p.IdCategoria != 1 " +	
-			         "ORDER BY p.Mensagem";
-        try
-        {
-            c = ConnectionHelper.getConnection();
-            PreparedStatement ps = c.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next())
-            {
-                listaPosts.add(processarResultado(rs));
-            }
-        } 
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-		} 
-        finally
-        {
-			ConnectionHelper.close(c);
-		}
-        
-        return listaPosts;
-	}
-	
     private org.catfeed.Post processarResultado(ResultSet rs) throws SQLException
     {
         org.catfeed.Post post = new org.catfeed.Post();
@@ -131,9 +75,9 @@ public class PostDAO
         post.setId(rs.getInt("Id"));
         post.setData(rs.getDate("Data"));
         post.setHashMensagem(rs.getString("HashMensagem"));
-        post.setIdCategoria(rs.getInt("IdCategoria"));
         post.setMensagem(rs.getString("Mensagem"));
         post.setUsuario(rs.getString("Usuario"));
+        post.setAutor(rs.getString("Autor"));
         
         return post;
     }

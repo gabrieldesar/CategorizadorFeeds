@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.catfeed.dao.PostDAO;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
@@ -50,6 +51,8 @@ public class CategorizadorActionBean
 
 	private static Logger log = Logger.getLogger(CategorizadorActionBean.class.getName());
 	
+	private PostDAO postDAO = new PostDAO();
+	
 	public List<Keyword> obterListaKeywords(List<String> listaMensagensPosts)
 	{
 		List<String> listaMensagensSemStopWords = obterListaMensagensSemStopWords(listaMensagensPosts);
@@ -57,6 +60,19 @@ public class CategorizadorActionBean
 		List<Keyword> listaKeyWords = prepararListaKeywords(listaMensagensTermosRelevantes);
 		
 		return listaKeyWords;
+	}
+	
+	public List<String> obterListaMensagensPosts(String nomeUsuarioLogado)
+	{
+		List<org.catfeed.Post> listaPostsUsuarioLogado = postDAO.recuperarPostsPorUsuario(nomeUsuarioLogado);
+		List<String> listaMensagensPosts = new ArrayList<String>();
+		
+		 for(org.catfeed.Post post : listaPostsUsuarioLogado)
+		 {
+			 listaMensagensPosts.add(post.getMensagem());
+		 }
+		 
+		 return listaMensagensPosts;
 	}
 	
 	 protected void treinarBaseDeConhecimento()
@@ -351,5 +367,23 @@ public class CategorizadorActionBean
 		}
 		
 		return mapaCategoriasNumeroPosts;
+	}
+
+	public List<Post> obterListaPostsPorCategoria(String nomeUsuarioLogado, String categoria)
+	{
+		List<Post> listaPostsUsuarioLogado = postDAO.recuperarPostsPorUsuario(nomeUsuarioLogado);
+		List<Post> listaPostsEsportes = new ArrayList<Post>();
+		
+		for(Post post : listaPostsUsuarioLogado)
+		{
+			String categoriaPost = obterCategoriaMensagem(post.getMensagem());
+			
+			if(categoria.equals(categoriaPost))
+			{
+				listaPostsEsportes.add(post);
+			}
+		}
+		
+		return listaPostsEsportes;
 	}
 }

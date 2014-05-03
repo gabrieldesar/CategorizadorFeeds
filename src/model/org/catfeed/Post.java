@@ -10,12 +10,32 @@ public class Post
 	
 	private String mensagem;
 	
-	private int idCategoria;
-	
 	private String usuario;
+	
+	private String autor;
 	
 	private String hashMensagem;
 	
+	public String getHashMensagem()
+	{
+		return hashMensagem;
+	}
+
+	public void setHashMensagem(String hashMensagem)
+	{
+		this.hashMensagem = hashMensagem;
+	}
+
+	public String getAutor()
+	{
+		return autor;
+	}
+
+	public void setAutor(String autor)
+	{
+		this.autor = autor;
+	}
+
 	public void setId(int id)
 	{
 		this.id = id;
@@ -31,20 +51,10 @@ public class Post
 		this.mensagem = mensagem;
 	}
 	
-	public void setIdCategoria(int idCategoria)
-	{
-		this.idCategoria = idCategoria;
-	}
-	
 	public void setUsuario(String usuario)
 	{
 		this.usuario = usuario;
-	}
-	
-	public void setHashMensagem(String hashMensagem)
-	{
-		this.hashMensagem = hashMensagem;
-	}
+	}	
 	
 	public int getId()
 	{
@@ -61,18 +71,8 @@ public class Post
 		return mensagem;
 	}
 
-	public int getIdCategoria()
-	{
-		return idCategoria;
-	}
-
 	public String getUsuario()
 	{
 		return usuario;
-	}
-
-	public String getHashMensagem()
-	{
-		return hashMensagem;
 	}
 }
