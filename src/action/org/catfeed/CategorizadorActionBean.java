@@ -3,6 +3,8 @@ package org.catfeed;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -224,8 +226,9 @@ public class CategorizadorActionBean
 	    }
 	    
 	    String mensagemSemStopWords = stringBuilderMensagemSemStopWords.toString();
-		
-		return mensagemSemStopWords;
+	    String mensagemSemStopWordsESemAcentos = Normalizer.normalize(mensagemSemStopWords, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+	    
+		return mensagemSemStopWordsESemAcentos;
 	}
 	
 	protected Double calcularTfIdf(String termo, String documento, List<String> colecao)

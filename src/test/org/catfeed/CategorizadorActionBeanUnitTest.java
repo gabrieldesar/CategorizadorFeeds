@@ -87,7 +87,18 @@ public class CategorizadorActionBeanUnitTest
 		
 		String mensagemPostSemStopWords = categorizadorActionBean.removerStopWords(mensagemPost);
 
-		assertEquals("sorte comprar 455 figurinhas ficar 63 repetidas terminar 38 vício álbumdacopa vamoquevamo", mensagemPostSemStopWords);
+		assertEquals("sorte comprar 455 figurinhas ficar 63 repetidas terminar 38 vicio albumdacopa vamoquevamo", mensagemPostSemStopWords);
+	}
+	
+	@Test
+	public void testRemoverStopWords_DeveNormalizarTexto()
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost = "Praça iTiNeRáRiO Trânsito";
+		
+		String mensagemPostSemStopWords = categorizadorActionBean.removerStopWords(mensagemPost);
+
+		assertEquals("praca itinerario transito", mensagemPostSemStopWords);
 	}
 	
 	@Test
@@ -135,7 +146,7 @@ public class CategorizadorActionBeanUnitTest
 		Map<String, Integer> mapaCategoriasNumeroPosts = categorizadorActionBean.obterMapaCategoriasNumeroPosts(listaMensagensPosts);
 		
 		assertEquals(new Integer(2), mapaCategoriasNumeroPosts.get("esportes"));
-		assertEquals(new Integer(1), mapaCategoriasNumeroPosts.get("politica"));
+		assertEquals(new Integer(1), mapaCategoriasNumeroPosts.get("outros"));
 	}
 	
 	@Test
@@ -157,7 +168,7 @@ public class CategorizadorActionBeanUnitTest
 
 		ArrayList<ArrayList<Object>> arrayCategoriasNumeroPosts = categorizadorActionBean.obterArrayCategoriasNumeroPosts(listaMensagensPosts);
 		
-		assertEquals("politica", arrayCategoriasNumeroPosts.get(0).get(0));
+		assertEquals("outros", arrayCategoriasNumeroPosts.get(0).get(0));
 		assertEquals(new Integer(1), arrayCategoriasNumeroPosts.get(0).get(1));
 		assertEquals("esportes", arrayCategoriasNumeroPosts.get(1).get(0));
 		assertEquals(new Integer(2), arrayCategoriasNumeroPosts.get(1).get(1));
@@ -209,10 +220,10 @@ public class CategorizadorActionBeanUnitTest
 		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
 		String mensagemPost =	"Quando que um jornal nacional faria uma matéria assim? " + 
 								"A favela cansou de enterrar seus mortos calada.";
-		
+	
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
 		
-		assertEquals("politica", categoria);
+		assertEquals("outros", categoria);
 	}
 	
 	@Test
@@ -327,6 +338,47 @@ public class CategorizadorActionBeanUnitTest
 
 		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);		
 		assertEquals("outros", categoria);
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_PostSobreOutrosAssuntos_DeveRetornarCategoriaCorreta3() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost = "They are evils... http://9gag.com/gag/a2NARAE?ref=fbp";
+	
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);		
+		assertEquals("outros", categoria);
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_PostSobreOutrosAssuntos_DeveRetornarCategoriaCorreta4() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost = "'The Amazing Spider-Man 2' kicks off the summer season with a $92 million opening this weekend: http://imdb.to/1ngqjgt";
+	
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);		
+		assertEquals("outros", categoria);
+	}
+	
+	@Test
+	public void testObterCategoriaMensagem_PostSobreOutrosAssuntos_DeveRetornarCategoriaCorreta5() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost = "Amiguinhos, Assistam TODOS os vídeos até o final. É alarmante saber que o racismo que dizem que não existe, ou que praticamente inexiste é mais evidente que o reflexo da sua própria cor, das suas próprias idéias, do seu próprio preconceito. Essas crianças refletem o que elas vêm, o que elas ouvem, o que o mundo que as cerca lhes mostra! ISSO É MUITO MAIS CONTUNDENTE QUE COMER UMA BANANA!";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);		
+		assertEquals("politica", categoria);
+	}
+
+	@Test
+	public void testObterCategoriaMensagem_PostSobreEsportes_DeveRetornarCategoriaCorreta() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"Mais uma vez, o Fluminense vacilou na Taça Rio sub-20 e foi o único grande a não comemorar na sexta rodada. O Tricolor empatou em 1 a 1 com o Audax, em São João de Meriti, e foi a 12 pontos. Com isso, o Vasco, que venceu o Volta Redonda, no CT de …";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("esportes", categoria);
 	}
 	
 	@Test
