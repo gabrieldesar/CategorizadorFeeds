@@ -24,7 +24,7 @@ import com.restfb.Parameter;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
-@Path("feed")
+@Path("/feed")
 public class FeedWS
 {
 	private static final String CATEGORIA_OUTROS = "outros";
@@ -61,7 +61,7 @@ public class FeedWS
 		 String stringAccessToken = FeedUtils.transformarJSONEmString(accessToken, "accessToken");
 		 FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
-		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("limit", "50"));
+		 Connection<Post> newsFeed = facebookClient.fetchConnection("me/home", Post.class, Parameter.with("limit", "100"));
 		 User usuarioLogado = facebookClient.fetchObject("me", User.class);
 		 
 		 persistirPosts(newsFeed, usuarioLogado);
