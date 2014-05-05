@@ -380,6 +380,16 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("esportes", categoria);
 	}
+	@Test
+	public void testObterCategoriaMensagem_PostSobreClima_DeveRetornarCategoriaCorreta() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"TEMPO - Bom dia! O tempo continua estável e sem chuva no Rio devido à influência de um sistema de alta pressão. Temos um domingo de céu com poucas nuvens e, no momento, temperatura média de 25ºC. Ao longo do dia, o céu varia entre claro e parcialmente nublado. Máxima de 31ºC. Imagens registradas pelas câmeras do COR no entorno da Lapa nesta manhã. Detalhes dos Arcos da Lapa e da Catedral Metropolitana.";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("clima", categoria);
+	}
 	
 	@Test
 	public void testTreinarBaseDeConhecimento() throws IOException

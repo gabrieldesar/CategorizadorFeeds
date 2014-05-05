@@ -34,6 +34,8 @@ public class FeedWS
 	private static final String CATEGORIA_POLITICA = "politica";
 
 	private static final String CATEGORIA_ESPORTES = "esportes";
+	
+	private static final String CATEGORIA_CLIMA = "clima";
 
 	private PostDAO postDAO = new PostDAO();
 	
@@ -104,6 +106,19 @@ public class FeedWS
 		List<org.catfeed.Post> listaPostsEsportes = categorizadorActionBean.obterListaPostsPorCategoria(nomeUsuarioLogado, CATEGORIA_ESPORTES);
 		
 		return new Gson().toJson(listaPostsEsportes);
+	}
+	
+	@POST
+	@Path("clima")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+	public String obterListaPostsClima(@JsonProperty("accessToken") String accessToken) throws IOException
+	{
+		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
+		
+		List<org.catfeed.Post> listaPostsClima = categorizadorActionBean.obterListaPostsPorCategoria(nomeUsuarioLogado, CATEGORIA_CLIMA);
+		
+		return new Gson().toJson(listaPostsClima);
 	}
 	
 	@POST
