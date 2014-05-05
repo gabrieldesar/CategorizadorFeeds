@@ -1,2 +1,2 @@
-transito carro carreta colidiram sentido linhas centro itinerarios pontos linhas centro trafego mergulhao praca avenida colisao obras obra interdicao desvio acidente moto carro semaforo pedestre 
+transito carro carreta colidiram linhas centro itinerarios centro trafego mergulhao praca avenida colisao obras obra interdicao desvio acidente moto carro semaforo pedestre 
 
