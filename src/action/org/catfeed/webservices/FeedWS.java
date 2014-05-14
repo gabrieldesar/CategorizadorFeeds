@@ -24,7 +24,7 @@ import com.restfb.Parameter;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
-@Path("/feed")
+@Path("feed")
 public class FeedWS
 {
 	private static final String CATEGORIA_OUTROS = "outros";
