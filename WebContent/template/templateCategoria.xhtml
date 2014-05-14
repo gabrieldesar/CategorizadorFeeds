@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"   
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets" >
+      
+      <h:head >
+      	<ui:insert name="titulo">
+      		<title>CatFeed - #{categoria}</title>
+      	</ui:insert>
+		
+		<ui:insert name="coreJS">
+			<script type="text/javascript" src="/CatFeed/js/plugins/jquery-1.11.0.min.js" />
+			<script type="text/javascript" src="/CatFeed/js/plugins/facebook.min.js" />
+			<script type="text/javascript" src="/CatFeed/js/plugins/jqcloud-1.0.4.min.js" />
+			<script type="text/javascript" src="/CatFeed/js/plugins/spin.min.js" />
+		</ui:insert>
+		
+		<ui:insert name="extraJS">
+			<script type="text/javascript" src="/CatFeed/js/#{categoria}.js" />
+		</ui:insert>
+      
+      	<ui:insert name="coreCSS">
+	    	<link href="/CatFeed/css/bootstrap.min.css" 		type="text/css" rel="stylesheet" media="all" />
+	    	<link href="/CatFeed/css/blog.css"					type="text/css" rel="stylesheet" media="all" />
+	    	<link href="/CatFeed/css/dashboard.css"				type="text/css" rel="stylesheet" media="all" />
+    	</ui:insert>
+      </h:head>
+      
+      <h:body>
+      
+      	<ui:param name="URLEsportes" value="http://localhost:8080/CatFeed/pri/esportes.jsf" />
+      	<ui:param name="URLPolitica" value="http://localhost:8080/CatFeed/pri/politica.jsf" />
+      	<ui:param name="URLTransito" value="http://localhost:8080/CatFeed/pri/transito.jsf" />
+      	<ui:param name="URLOutros" value="http://localhost:8080/CatFeed/pri/outros.jsf" />
+      	<ui:param name="URLClima" value="http://localhost:8080/CatFeed/pri/clima.jsf" />
+      
+      	<ui:insert name="conteudo">
+			<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		      <div class="container-fluid">
+		        <div class="navbar-header">
+		          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		            <span class="sr-only">Toggle navigation</span>
+		            <span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+		          </button>
+		          <a class="navbar-brand" href="#">CatFeed</a>
+		        </div>
+		        <div class="navbar-collapse collapse">
+		          <ul class="nav navbar-nav navbar-right">
+		            <li><a href="#">Sobre</a></li>
+		          </ul>
+		        </div>
+		      </div>
+	    	</div>
+	    	
+			<div class="container-fluid">
+				<div class="row">
+		        	<div class="col-sm-3 col-md-2 sidebar">
+			          <ul class="nav nav-sidebar">
+						<li><a href="http://localhost:8080/CatFeed/pri/perfil.jsf">Meu perfil</a></li>
+			            <li class="#{categoria == 'esportes' ? 'active' : ''}"><a href="#{categoria == 'esportes' ? '#' : URLEsportes}">Esportes</a></li>
+			            <li class="#{categoria == 'politica' ? 'active' : ''}"><a href="#{categoria == 'politica' ? '#' : URLPolitica}">Política</a></li>
+			            <li class="#{categoria == 'transito' ? 'active' : ''}"><a href="#{categoria == 'transito' ? '#' : URLTransito}">Trânsito</a></li>
+			            <li class="#{categoria == 'outros' ? 'active' : ''}"><a href="#{categoria == 'outros' ? '#' : URLOutros}">Outros</a></li>
+			            <li class="#{categoria == 'clima' ? 'active' : ''}"><a href="#{categoria == 'clima' ? '#' : URLClima}">Clima</a></li>
+			          </ul>
+	        		</div>
+	        	</div>
+	        </div>
+	        
+	        <div class="row">
+	        	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+	        		<h2 class="page-header">Clima</h2>
+		        	<div id="posts" />
+		        	
+		        	<div class="row">
+		        		<div class="col-md-3 col-md-offset-4 placeholders" />
+		        	</div>
+		        	<div class="row">
+		        		<div class="col-md-3 col-md-offset-4 placeholders" />
+		        	</div>
+		        	<div class="row">
+		        		<div class="col-md-3 col-md-offset-4 placeholders" />
+		        	</div>
+		        	<div class="row">
+		        		<div class="col-md-3 col-md-offset-4 placeholders" />
+		        	</div>
+		        	<div class="row">
+		        		<div id="spinnerDiv" class="col-md-3 col-md-offset-4" />
+	       			</div>
+	       		</div>
+	        </div>
+	    </ui:insert>
+      </h:body>
+</html>
