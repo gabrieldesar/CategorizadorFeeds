@@ -15,10 +15,20 @@ public class Post
 	private String autor;
 	
 	private String hashMensagem;
+
+	private long countPriority;
 	
 	public String getHashMensagem()
 	{
 		return hashMensagem;
+	}
+	
+	public long getCountPriority() {
+		return countPriority;
+	}
+
+	public void setCountPriority(long countPriority) {
+		this.countPriority = countPriority;
 	}
 
 	public void setHashMensagem(String hashMensagem)

@@ -16,16 +16,19 @@ public class PostDAO
 	{
 		Connection c = null;
         PreparedStatement ps = null;
+        long countPriority = post.getComments().getTotalCount() + post.getLikesCount() + post.getSharesCount();
+                
         
         try
         {
             c = ConnectionHelper.getConnection();
-            ps = c.prepareStatement("INSERT INTO Post VALUES (default, ?, ?, ?, ?, ?)");
+            ps = c.prepareStatement("INSERT INTO Post VALUES (default, ?, ?, ?, ?, ?,?)");
             ps.setDate(1, formatarHoraAtual());
             ps.setString(2, post.getMessage());
             ps.setString(3, nomeUsuario);
             ps.setString(4, post.getFrom().getName());
             ps.setString(5, gerarHashMD5(post.getMessage()));
+            ps.setLong(6, countPriority);
             ps.executeUpdate();
         } 
         catch (Exception e)
@@ -78,6 +81,7 @@ public class PostDAO
         post.setMensagem(rs.getString("Mensagem"));
         post.setUsuario(rs.getString("Usuario"));
         post.setAutor(rs.getString("Autor"));
+        post.setCountPriority(rs.getLong("Prioridade"));
         
         return post;
     }
