@@ -35,6 +35,8 @@
       	<ui:param name="URLTransito" value="http://localhost:8080/CatFeed/pri/transito.jsf" />
       	<ui:param name="URLOutros" value="http://localhost:8080/CatFeed/pri/outros.jsf" />
       	<ui:param name="URLClima" value="http://localhost:8080/CatFeed/pri/clima.jsf" />
+      	<ui:param name="URLParabens" value="http://localhost:8080/CatFeed/pri/parabens.jsf" />
+      	
       
       	<ui:insert name="conteudo">
 			<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -60,6 +62,7 @@
 			            <li class="#{categoria == 'politica' ? 'active' : ''}"><a href="#{categoria == 'politica' ? '#' : URLPolitica}">Política</a></li>
 			            <li class="#{categoria == 'transito' ? 'active' : ''}"><a href="#{categoria == 'transito' ? '#' : URLTransito}">Trânsito</a></li>
 			            <li class="#{categoria == 'clima' ? 'active' : ''}"><a href="#{categoria == 'clima' ? '#' : URLClima}">Clima</a></li>
+			            <li class="#{categoria == 'parabens' ? 'active' : ''}"><a href="#{categoria == 'parabens' ? '#' : URLParabens}">Parabens</a></li>
 			            <li class="#{categoria == 'outros' ? 'active' : ''}"><a href="#{categoria == 'outros' ? '#' : URLOutros}">Outros</a></li>
 			          </ul>
 	        		</div>

@@ -213,6 +213,16 @@ public class CategorizadorActionBeanUnitTest
 		
 		assertEquals("esportes", categoria);
 	}
+	@Test
+	public void testObterCategoriaMensagem_PostSobreParabens_DeveRetornarCategoriaCorreta() throws IOException
+	{
+		CategorizadorActionBean categorizadorActionBean = new CategorizadorActionBean();
+		String mensagemPost =	"Parabéns :))";
+		
+		String categoria = categorizadorActionBean.obterCategoriaMensagem(mensagemPost);
+		
+		assertEquals("parabens", categoria);
+	}
 	
 	@Test
 	public void testObterCategoriaMensagem_PostSobrePolitica_DeveRetornarCategoriaCorreta() throws IOException

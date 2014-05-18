@@ -36,6 +36,8 @@ public class FeedWS
 	private static final String CATEGORIA_ESPORTES = "esportes";
 	
 	private static final String CATEGORIA_CLIMA = "clima";
+	
+	private static final String CATEGORIA_PARABENS = "parabens";
 
 	private PostDAO postDAO = new PostDAO();
 	
@@ -68,6 +70,7 @@ public class FeedWS
 		 
 		 persistirPosts(newsFeed, usuarioLogado);
     }
+	
 	
 	@POST
 	@Path("listaKeywords")
@@ -106,6 +109,18 @@ public class FeedWS
 		List<org.catfeed.Post> listaPostsEsportes = categorizadorActionBean.obterListaPostsPorCategoria(nomeUsuarioLogado, CATEGORIA_ESPORTES);
 		
 		return new Gson().toJson(listaPostsEsportes);
+	}
+	@POST
+	@Path("parabens")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+	public String obterListaPostsParabens(@JsonProperty("accessToken") String accessToken) throws IOException
+	{
+		String nomeUsuarioLogado = obterNomeUsuarioLogado(accessToken);
+		
+		List<org.catfeed.Post> listaPostsParabens = categorizadorActionBean.obterListaPostsPorCategoria(nomeUsuarioLogado, CATEGORIA_PARABENS);
+		
+		return new Gson().toJson(listaPostsParabens);
 	}
 	
 	@POST
