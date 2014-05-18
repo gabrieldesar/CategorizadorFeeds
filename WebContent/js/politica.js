@@ -30,9 +30,10 @@ function renderizarListaPostsPolitica(data, postsSpinner) {
 
 	postsSpinner.stop();
 	jQuery.each(list, function(index, post) {
+		var prioridade = post.quantidadeLikes + post.quantidadeComentarios + post.quantidadeCompartilhamentos;
 		
 		jQuery('#posts').append('<div class="blog-post">' + 
-								   		'<p class="blog-post-meta">'+post.data+'by <a href="https://www.facebook.com/search/more/?q='+post.autor+'" target="_blank">'+post.autor+'</a></p>' +
+								   		'<p class="blog-post-meta">'+post.data+'by <a href="https://www.facebook.com/search/more/?q='+post.autor+'" target="_blank">'+post.autor+'</a> Prioridade: '+prioridade+'</p>' +
 								   		'<p>'+post.mensagem+'</p>' +
 								   		'</div>');
 	});

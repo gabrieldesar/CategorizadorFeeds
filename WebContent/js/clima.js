@@ -5,7 +5,7 @@ function redirecionarPaginaLogin() {
 	window.location.href = loginURL;
 }
 
-function recuperarListaPostsEsportes(postsSpinner) {
+function recuperarListaPostsClima(postsSpinner) {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
       var accessTokenString = JSON.stringify({"accessToken": accessToken});
       
@@ -19,20 +19,21 @@ function recuperarListaPostsEsportes(postsSpinner) {
               },
           success: function (data, msg) {
               console.log("Lista de posts sobre clima recuperada com sucesso.");
-              renderizarListaPostsEsportes(data, postsSpinner);
+              renderizarListaPostsClima(data, postsSpinner);
           }
       });
 }
   
-function renderizarListaPostsEsportes(data, postsSpinner) {
+function renderizarListaPostsClima(data, postsSpinner) {
 
 	var list = data == null ? [] : (data instanceof Array ? data : [data]);
 
 	postsSpinner.stop();
 	jQuery.each(list, function(index, post) {
+		var prioridade = post.quantidadeLikes + post.quantidadeComentarios + post.quantidadeCompartilhamentos;
 		
 		jQuery('#posts').append('<div class="blog-post">' + 
-								   		'<p class="blog-post-meta">'+post.data+'by <a href="https://www.facebook.com/search/more/?q='+post.autor+'" target="_blank">'+post.autor+'</a></p>' +
+								   		'<p class="blog-post-meta">'+post.data+'by <a href="https://www.facebook.com/search/more/?q='+post.autor+'" target="_blank">'+post.autor+'</a> Prioridade: '+prioridade+'</p>' +
 								   		'<p>'+post.mensagem+'</p>' +
 								   		'</div>');
 	});
@@ -61,7 +62,7 @@ jQuery(window).load(function() {
 	
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
-		recuperarListaPostsEsportes(postsSpinner);
+		recuperarListaPostsClima(postsSpinner);
 	  } else {
 	   	redirecionarPaginaLogin();
 	  }

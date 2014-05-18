@@ -8,6 +8,12 @@ public class Post
 
 	private Date data;
 	
+	private Long quantidadeLikes;
+	
+	private Long quantidadeComentarios;
+	
+	private Long quantidadeCompartilhamentos;
+
 	private String mensagem;
 	
 	private String usuario;
@@ -16,21 +22,41 @@ public class Post
 	
 	private String hashMensagem;
 
-	private long countPriority;
+	public Long getQuantidadeLikes()
+	{
+		return quantidadeLikes;
+	}
+
+	public void setQuantidadeLikes(Long quantidadeLikes)
+	{
+		this.quantidadeLikes = quantidadeLikes;
+	}
+
+	public Long getQuantidadeComentarios()
+	{
+		return quantidadeComentarios;
+	}
+
+	public void setQuantidadeComentarios(Long quantidadeComentarios)
+	{
+		this.quantidadeComentarios = quantidadeComentarios;
+	}
+
+	public Long getQuantidadeCompartilhamentos()
+	{
+		return quantidadeCompartilhamentos;
+	}
+
+	public void setQuantidadeCompartilhamentos(Long quantidadeCompartilhamentos)
+	{
+		this.quantidadeCompartilhamentos = quantidadeCompartilhamentos;
+	}
 	
 	public String getHashMensagem()
 	{
 		return hashMensagem;
 	}
 	
-	public long getCountPriority() {
-		return countPriority;
-	}
-
-	public void setCountPriority(long countPriority) {
-		this.countPriority = countPriority;
-	}
-
 	public void setHashMensagem(String hashMensagem)
 	{
 		this.hashMensagem = hashMensagem;

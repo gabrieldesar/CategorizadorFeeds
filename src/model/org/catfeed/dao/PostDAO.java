@@ -16,19 +16,19 @@ public class PostDAO
 	{
 		Connection c = null;
         PreparedStatement ps = null;
-        long countPriority = post.getComments().getTotalCount() + post.getLikesCount() + post.getSharesCount();
-                
         
         try
         {
             c = ConnectionHelper.getConnection();
-            ps = c.prepareStatement("INSERT INTO Post VALUES (default, ?, ?, ?, ?, ?,?)");
+            ps = c.prepareStatement("INSERT INTO Post VALUES (default, ?, ?, ?, ?, ?, ?, ?, ?)");
             ps.setDate(1, formatarHoraAtual());
             ps.setString(2, post.getMessage());
             ps.setString(3, nomeUsuario);
             ps.setString(4, post.getFrom().getName());
-            ps.setString(5, gerarHashMD5(post.getMessage()));
-            ps.setLong(6, countPriority);
+            ps.setLong(5, post.getLikes().getData().size());
+            ps.setLong(6, post.getSharesCount() == null ? 0 : post.getSharesCount());
+            ps.setLong(7, post.getComments().getData().size());
+            ps.setString(8, gerarHashMD5(post.getMessage()));
             ps.executeUpdate();
         } 
         catch (Exception e)
@@ -45,9 +45,9 @@ public class PostDAO
 	{
 		List<org.catfeed.Post> listaPosts = new ArrayList<org.catfeed.Post>();
         Connection c = null;
-    	String sql = "SELECT * FROM Post as p " +
+    	String sql = "SELECT *, (QuantidadeLikes + QuantidadeComentarios + QuantidadeCompartilhamentos) AS Prioridade FROM Post " +
 			         "WHERE UPPER(Usuario) LIKE ? " +	
-			         "ORDER BY Usuario";
+			         "ORDER BY Prioridade DESC";
         try
         {
             c = ConnectionHelper.getConnection();
@@ -81,7 +81,9 @@ public class PostDAO
         post.setMensagem(rs.getString("Mensagem"));
         post.setUsuario(rs.getString("Usuario"));
         post.setAutor(rs.getString("Autor"));
-        post.setCountPriority(rs.getLong("Prioridade"));
+        post.setQuantidadeLikes(rs.getLong("QuantidadeLikes"));
+        post.setQuantidadeCompartilhamentos(rs.getLong("QuantidadeCompartilhamentos"));
+        post.setQuantidadeComentarios(rs.getLong("QuantidadeComentarios"));
         
         return post;
     }
