@@ -5,6 +5,25 @@ function redirecionarPaginaLogin() {
 	window.location.href = loginURL;
 }
 
+function exibirNome() {
+	  var accessToken = FB.getAuthResponse()['accessToken'];
+    var accessTokenString = JSON.stringify({"accessToken": accessToken});
+    
+    jQuery.ajax({
+        type: "POST",
+        url: rootURL + '/nomeUsuario',
+        data: accessTokenString,
+        contentType: "application/json",
+        error: function (xhr, status) {
+                console.log("Ocorreu um erro ao exibir o nome: " + status + '.');
+            },
+        success: function (data, msg) {
+            console.log("Nome exibido com sucesso.");
+            renderizarNome(data);
+        }
+    });
+}
+
 
 function exibirFeed() {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
@@ -65,10 +84,14 @@ function recuperarArrayCategoriasNumeroPosts(feedChartSpinner) {
     });
 }
   
+function renderizarNome(data) {
+
+	jQuery('#nomeUsuario').append('<p>'+data+'</p>');
+}
+
 function renderizarPostsFeed(data) {
 
 	var list = data == null ? [] : (data instanceof Array ? data : [data]);
-
 	jQuery('#listaPosts li').remove();
 	$.each(list, function(index, mensagemPost) {
 		$('#listaPosts').append('<li>'+mensagemPost+'</li>');
@@ -127,6 +150,7 @@ jQuery(window).load(function() {
 	
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
+		exibirNome();
 	  	recuperarListaKeywords(wordCloudSpinner);
 	   	recuperarArrayCategoriasNumeroPosts(feedChartSpinner);
 	  } else {

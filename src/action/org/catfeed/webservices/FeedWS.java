@@ -80,10 +80,10 @@ public class FeedWS
 		String stringAccessToken = FeedUtils.transformarJSONEmString(accessToken, "accessToken");
 		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
 		 
-		User usuarioLogado = facebookClient.fetchObject("me", User.class);
-		String nomeUsuarioLogado = usuarioLogado.getName();
-		 
-		return nomeUsuarioLogado;
+		User usuario = facebookClient.fetchObject("me", User.class);
+		String nomeUsuarioLogado = "Bem vindo, " + usuario.getName() +"!";
+
+		return new Gson().toJson(nomeUsuarioLogado);
     }
 	
 	
