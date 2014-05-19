@@ -71,6 +71,21 @@ public class FeedWS
 		 persistirPosts(newsFeed, usuarioLogado);
     }
 	
+	@POST
+	@Path("nomeUsuario")
+	@Consumes({ MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON})
+    public String nomeUsuario(@JsonProperty("accessToken") String accessToken)
+	{
+		String stringAccessToken = FeedUtils.transformarJSONEmString(accessToken, "accessToken");
+		FacebookClient facebookClient = new DefaultFacebookClient(stringAccessToken);
+		 
+		User usuarioLogado = facebookClient.fetchObject("me", User.class);
+		String nomeUsuarioLogado = usuarioLogado.getName();
+		 
+		return nomeUsuarioLogado;
+    }
+	
 	
 	@POST
 	@Path("listaKeywords")

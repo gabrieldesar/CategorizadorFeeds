@@ -5,6 +5,7 @@ function redirecionarPaginaLogin() {
 	window.location.href = loginURL;
 }
 
+
 function exibirFeed() {
 	  var accessToken = FB.getAuthResponse()['accessToken'];
       var accessTokenString = JSON.stringify({"accessToken": accessToken});
